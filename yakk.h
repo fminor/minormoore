@@ -53,10 +53,11 @@ void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 
 /* Custom Kernel Functions */
 void YKIdle(); /* Idle task for the kernel */
-void initStack(int, int, int, int); /* Assembely Function that initializes stack for new functions */
+void initStack(int, int); /* Assembely Function that initializes stack for new functions */
 TCBptr queue(TCBptr, TCBptr); /* Puts task onto prioritized queue */
 TCBptr dequeue(TCBptr); /* Removes head of queue */
 void suspendTask(TCBptr); /* Puts onto delayed queue */
+void dispatchTask(void* ); 
 
 /* Global Variables */
 
