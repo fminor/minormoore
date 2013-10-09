@@ -10,6 +10,6 @@
 #define MAXSEMAPHORES 0 /* will be added later */
 #define MAXMESSAGEQUEUES 0 /* will be added later */
 
-#define IDLETASKSIZE 255 /* idle task size */
+#define ISTACKSIZE 255 /* idle task size */
 
 
