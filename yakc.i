@@ -33,9 +33,7 @@ void signalEOI(void);
 # 9 "yakk.h"
 # 1 "yaku.h" 1
 # 10 "yakk.h" 2
-
-
-
+# 20 "yakk.h"
 typedef struct taskblock *TCBptr;
 typedef struct taskblock {
  void* sp;
@@ -67,8 +65,15 @@ void YKExitMutex();
 void YKEnterISR();
 void YKExitISR();
 void YKScheduler();
-void YKDispatcher();
+void YKDispatcher(TCBptr);
 void YKTickHandler();
+
+
+void YKIdle();
+void initStack(int, int, int, int);
+TCBptr queue(TCBptr, TCBptr);
+TCBptr dequeue(TCBptr);
+void suspendTask(TCBptr);
 
 
 
@@ -88,25 +93,55 @@ TCBptr YKSuspList;
 TCBptr YKAvailTCBList;
 TCB YKTCBArray[3 +1];
 
+int IStk[255];
 
 
 
 void YKInitialize() {
+ int i;
+ TCBptr tempList;
  YKCtxSwCount = 0;
  YKIdleCount = 0;
  YKTickNum = 0;
 
+ YKRdyList = 0;
+ YKSuspList = 0;
+ YKAvailTCBList = YKTCBArray;
+ YKTCBArray[0].prev = 0;
+ for(i = 0; i < 3 + 1; i++){
+  YKTCBArray[i].next = &YKTCBArray[i + 1];
+  YKTCBArray[i + 1].prev = &YKTCBArray[i];
+ }
 
-
-
-
-
+ YKNewTask(YKIdle, (void*)&IStk[255],255);
 
 }
+
 
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
+ int cs,ip,ss,sp;
+
+ TCBptr new_task = YKAvailTCBList++;
+ new_task->priority = priority;
+ new_task->state = 0;
+ new_task->sp = taskStack;
+ new_task->delay = 0;
+ YKRdyList = queue(YKRdyList,new_task);
+ ip = (int) task & 0xFFFF;
+ cs = 0;
+ sp = (int) taskStack & 0xFFFF;
+ ss = 0;
+ initStack(cs,ip,ss,sp);
+
+
+
+
+
 
 }
+
+
+
 
 void YKRun() {
 
@@ -114,15 +149,22 @@ void YKRun() {
 
 void YKDelayTask(int count) {
 
+
+
 }
 
 void YKEnterMutex() {
+
+
 
 }
 
 void YKExitMutex() {
 
+
+
 }
+
 
 void YKEnterISR() {
 
@@ -132,14 +174,85 @@ void YKExitISR() {
 
 }
 
-void YKScheduler() {
 
+void YKScheduler() {
+ TCBptr next = dequeue(YKRdyList);
+ YKDispatcher(next);
 }
 
-void YKDispatcher() {
+
+void YKDispatcher(TCBptr next) {
+
+
+
+
+
+
 
 }
 
 void YKTickHandler() {
 
+ YKSuspList->delay = YKSuspList->delay - 1;
+ if(YKSuspList->delay == 0){
+  TCBptr task = dequeue(YKSuspList);
+  YKRdyList = queue(YKRdyList,task);
+ }
+}
+
+void YKIdle() {
+ while(1);
+}
+
+TCBptr queue(TCBptr queue_head, TCBptr task){
+ if(queue_head == 0){
+  return queue_head;
+ }
+ if(queue_head->priority > task->priority){
+  task->next = queue_head;
+  queue_head->prev = task;
+  queue_head = task;
+ } else {
+  TCBptr temp = queue_head;
+  while(temp->next->priority < task->priority) {
+   temp = temp->next;
+  }
+  task->next = temp->next;
+  task->next->prev = task;
+  task->prev = temp;
+  temp->next = task;
+ }
+ return queue_head;
+}
+
+TCBptr dequeue(TCBptr queue_head){
+ TCBptr next = queue_head;
+ queue_head = queue_head->next;
+ return next;
+}
+
+void suspendTask(TCBptr task){
+ TCBptr temp = 0;
+ if(task->delay < YKSuspList->delay){
+  YKSuspList->delay -= task->delay;
+                YKSuspList = task;
+ } else {
+
+
+  temp = YKSuspList;
+  while(temp->next != 0 && temp->delay < task->delay){
+   task->delay -= temp->delay;
+   temp = temp->next;
+  }
+  if(temp->delay < task->delay) {
+   task->delay -= temp->delay;
+   temp->next = task;
+   task->prev = temp;
+  } else {
+   task->prev = temp->prev;
+   task->next = temp;
+   temp->prev = task;
+   temp->delay -= task->delay;
+  }
+ }
 }

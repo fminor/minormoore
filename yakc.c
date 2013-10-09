@@ -54,10 +54,10 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 	new_task->sp = taskStack;
 	new_task->delay = 0;
 	YKRdyList = queue(YKRdyList,new_task);
-	ip = task & 0xFFFF;
-	cs = task >> 16;
-	sp = taskStack & 0xFFFF;
-	ss = taskStack >> 16;
+	ip = (int) task & 0xFFFF;
+	cs = 0;
+	sp = (int) taskStack & 0xFFFF;
+	ss = 0;
 	initStack(cs,ip,ss,sp);
 	// assembly function:
 	// push flags
@@ -103,8 +103,8 @@ void YKExitISR() { /* Called on exit from ISR */
 
 //2.5
 void YKScheduler() { /* Determines the highest priority ready task */
-	TCBptr next = dequeue(YKRdyList)
-	dispatcher(next)
+	TCBptr next = dequeue(YKRdyList);
+	YKDispatcher(next);
 }
 
 //2.5
@@ -125,6 +125,10 @@ void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 		TCBptr task = dequeue(YKSuspList);
 		YKRdyList = queue(YKRdyList,task);
 	}
+}
+
+void YKIdle() { /* Idle task for the kernel */
+	while(1);
 }
 
 TCBptr queue(TCBptr queue_head, TCBptr task){
