@@ -46,7 +46,7 @@ void YKInitialize() { /* Initializes all required kernel data structures */
 
 //2
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* Creates a new task */
-	int cs,ip,ss,sp;
+	int ip,sp;
 	// Need to write the assembly function	
 	TCBptr new_task = YKAvailTCBList++;
 	new_task->priority = priority;
@@ -55,10 +55,8 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 	new_task->delay = 0;
 	YKRdyList = queue(YKRdyList,new_task);
 	ip = (int) task & 0xFFFF;
-	cs = 0;
 	sp = (int) taskStack & 0xFFFF;
-	ss = 0;
-	initStack(cs,ip,ss,sp);
+	initStack(ip,sp);
 	// assembly function:
 	// push flags
 	// push CS - 0
@@ -71,7 +69,7 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 
 //3
 void YKRun() { /* Starts actual execution of user code */
-	//call scheduler....
+	YKScheduler();
 }
 
 void YKDelayTask(int count) { /* Delays a task for specified number of clock ticks*/
@@ -109,13 +107,11 @@ void YKScheduler() { /* Determines the highest priority ready task */
 
 //2.5
 void YKDispatcher(TCBptr next) { /* Begins or resumes execution of the next task */
-	//switch out sp
-	//pop dx
-	//pop cx
-	//pop bx
-	//pop ax
-	//pop something else
-	//iret
+	void* sp;
+	sp = next->sp;
+	next->state = RUNNING;
+	dispatchTask(sp);
+	
 }
 
 void YKTickHandler() { /* The kernel's timer tick interrupt handler */
@@ -128,7 +124,12 @@ void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 }
 
 void YKIdle() { /* Idle task for the kernel */
-	while(1);
+	int i;
+	while(1) {
+		for(i = 0; i < 500; i++) {
+			printString("Idle geese");
+		}
+	}
 }
 
 TCBptr queue(TCBptr queue_head, TCBptr task){

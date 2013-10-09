@@ -70,10 +70,11 @@ void YKTickHandler();
 
 
 void YKIdle();
-void initStack(int, int, int, int);
+void initStack(int, int);
 TCBptr queue(TCBptr, TCBptr);
 TCBptr dequeue(TCBptr);
 void suspendTask(TCBptr);
+void dispatchTask(void* );
 
 
 
@@ -119,7 +120,7 @@ void YKInitialize() {
 
 
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
- int cs,ip,ss,sp;
+ int ip,sp;
 
  TCBptr new_task = YKAvailTCBList++;
  new_task->priority = priority;
@@ -128,10 +129,8 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
  new_task->delay = 0;
  YKRdyList = queue(YKRdyList,new_task);
  ip = (int) task & 0xFFFF;
- cs = 0;
  sp = (int) taskStack & 0xFFFF;
- ss = 0;
- initStack(cs,ip,ss,sp);
+ initStack(ip,sp);
 
 
 
@@ -144,7 +143,7 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
 
 
 void YKRun() {
-
+ YKScheduler();
 }
 
 void YKDelayTask(int count) {
@@ -182,12 +181,10 @@ void YKScheduler() {
 
 
 void YKDispatcher(TCBptr next) {
-
-
-
-
-
-
+ void* sp;
+ sp = next->sp;
+ next->state = 1;
+ dispatchTask(sp);
 
 }
 
@@ -201,7 +198,12 @@ void YKTickHandler() {
 }
 
 void YKIdle() {
- while(1);
+ int i;
+ while(1) {
+  for(i = 0; i < 500; i++) {
+   printString("Idle geese");
+  }
+ }
 }
 
 TCBptr queue(TCBptr queue_head, TCBptr task){

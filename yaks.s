@@ -6,10 +6,8 @@
 
 
 ; initStack initialized stack for new tasks 
-; param1 cs bp + 2
-; param2 ip bp + 4
-; param3 ss bp + 6
-; param4 sp bp + 8
+; param1 ip bp + 4
+; param2 sp bp + 6
 ;
 ; stack should look like this when we are done:
 ; ax = 0
@@ -29,17 +27,15 @@
 initStack:
 	push bp		;
 	mov bp,sp	;
-	mov ax, 0x0200	; Store flags in ax
-	mov bx, word[bp + 8]	; Store TCB sp in bx
+	mov ax, 0x0	; 
+	mov bx, word[bp + 6]	; Store TCB sp in bx
 	mov cx, word[bp + 4]	; store ip in cx
-	mov dx, word[bp + 2]	; store cs in dx
-	mov sp, word[bp + 8]	; Change stack pointer to TCB stack
-	mov ss, word[bp + 6]	; 
-	push ax		; Push flags
-	push dx		; Push cs
+	mov dx, 0x0200	; Store flags in dx
+	mov sp, word[bp + 6]	; Change stack pointer to TCB stack
+	push dx		; Push flags
+	push ax		; Push cs
 	push cx		; Push ip
 	push bx		; Push bp
-	mov ax, 0x0	; 
 	push ax		; Push 0 onto stack 8 times
 	push ax		; 2
 	push ax		; 3
@@ -51,6 +47,21 @@ initStack:
 	mov sp,bp	; Restore stack pointer
 	pop bp		;
 	ret		; Return
+
+dispatchTask:
+	push bp			;
+	mov bp,sp		;
+	mov sp, word[bp+4]	;
+	pop ax			;
+	pop bx			;
+	pop cx			;
+	pop dx			;
+	pop si			;
+	pop di			;
+	pop ds			;
+	pop es			;
+	pop bp			;
+	iret			; Return
 		 
 	 
 	
