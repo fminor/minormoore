@@ -38,9 +38,7 @@ void signalEOI(void);
 # 9 "yakk.h"
 # 1 "yaku.h" 1
 # 10 "yakk.h" 2
-
-
-
+# 20 "yakk.h"
 typedef struct taskblock *TCBptr;
 typedef struct taskblock {
  void* sp;
@@ -72,8 +70,15 @@ void YKExitMutex();
 void YKEnterISR();
 void YKExitISR();
 void YKScheduler();
-void YKDispatcher();
+void YKDispatcher(TCBptr);
 void YKTickHandler();
+
+
+void YKIdle();
+void initStack(int, int, int, int);
+TCBptr queue(TCBptr, TCBptr);
+TCBptr dequeue(TCBptr);
+void suspendTask(TCBptr);
 
 
 

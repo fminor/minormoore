@@ -16,7 +16,7 @@ L_lab4b_app_4:
 	; >>>>> YKInitialize(); 
 	call	YKInitialize
 	; >>>>> Line:	26
-	; >>>>> printString("Creating task A...\n"); 
+	; >>>>> printString("Creating task A.. 
 	mov	ax, L_lab4b_app_1
 	push	ax
 	call	printString
@@ -62,7 +62,7 @@ ATask:
 	jmp	L_lab4b_app_10
 L_lab4b_app_11:
 	; >>>>> Line:	35
-	; >>>>> printString("Task 
+	; >>>>> printString("Task A started!\n"); 
 	mov	ax, L_lab4b_app_6
 	push	ax
 	call	printString
@@ -127,7 +127,7 @@ BTask:
 	jmp	L_lab4b_app_14
 L_lab4b_app_15:
 	; >>>>> Line:	49
-	; >>>>> printString("Task B started! Oh no! Task B wasn't supposed to run.\n"); 
+	; >>>>> printString("Task B started! Oh no! 
 	mov	ax, L_lab4b_app_13
 	push	ax
 	call	printString
@@ -161,7 +161,7 @@ L_lab4b_app_21:
 	; >>>>> YKEnterMutex(); 
 	call	YKEnterMutex
 	; >>>>> Line:	59
-	; >>>>> numCtxSwi 
+	; >>>>> numCtxSwitches = YKCtxSwCount; 
 	mov	ax, word [YKCtxSwCount]
 	mov	word [bp-4], ax
 	; >>>>> Line:	60
