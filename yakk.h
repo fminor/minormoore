@@ -44,6 +44,11 @@ void YKScheduler(); /* Determines the highest priority ready task */
 void YKDispatcher(); /* Begins or resumes execution of the next task */
 void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 
+/* Custom Kernel Functions */
+void YKIdle(); /* Idle task for the kernel */
+void initStack(cs, ip, ss, sp); /* Assembely Function that initializes stack for new functions */
+
+
 /* Global Variables */
 
 extern int YKCtxSwCount; /* Global variable tracking context switches */
