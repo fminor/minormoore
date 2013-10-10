@@ -218,6 +218,8 @@ void YKIdle() {
  int i;
  while(1) {
   YKIdleCount++;
+  i = 0;
+  i = 0;
 
 
 

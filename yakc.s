@@ -397,6 +397,12 @@ L_yakc_38:
 	; >>>>> Line:	176
 	; >>>>> YKIdleCount++; 
 	inc	word [YKIdleCount]
+	; >>>>> Line:	177
+	; >>>>> i = 0; 
+	mov	word [bp-2], 0
+	; >>>>> Line:	178
+	; >>>>> i = 0; 
+	mov	word [bp-2], 0
 L_yakc_39:
 	jmp	L_yakc_38
 L_yakc_40:
@@ -410,21 +416,21 @@ L_yakc_36:
 	jmp	L_yakc_37
 	ALIGN	2
 queue:
-	; >>>>> Line:	183
+	; >>>>> Line:	185
 	; >>>>> TCBptr queue(TCBptr queue_head, TCBptr task){ 
 	jmp	L_yakc_42
 L_yakc_43:
-	; >>>>> Line:	184
+	; >>>>> Line:	186
 	; >>>>> if(queue_head == 0){ 
 	mov	ax, word [bp+4]
 	test	ax, ax
 	jne	L_yakc_44
-	; >>>>> Line:	185
+	; >>>>> Line:	187
 	; >>>>> return task; 
 	mov	ax, word [bp+6]
 	jmp	L_yakc_45
 L_yakc_44:
-	; >>>>> Line:	187
+	; >>>>> Line:	189
 	; >>>>> if(queue_head->priority > task->priority){ 
 	mov	si, word [bp+4]
 	add	si, 4
@@ -433,33 +439,33 @@ L_yakc_44:
 	mov	al, byte [di]
 	cmp	al, byte [si]
 	jae	L_yakc_46
-	; >>>>> Line:	188
+	; >>>>> Line:	190
 	; >>>>> task->next = queue_head; 
 	mov	si, word [bp+6]
 	add	si, 8
 	mov	ax, word [bp+4]
 	mov	word [si], ax
-	; >>>>> Line:	189
+	; >>>>> Line:	191
 	; >>>>> queue_head->prev = task; 
 	mov	si, word [bp+4]
 	add	si, 10
 	mov	ax, word [bp+6]
 	mov	word [si], ax
-	; >>>>> Line:	190
+	; >>>>> Line:	192
 	; >>>>> queue_head = task; 
 	mov	ax, word [bp+6]
 	mov	word [bp+4], ax
 	jmp	L_yakc_47
 L_yakc_46:
-	; >>>>> Line:	193
+	; >>>>> Line:	195
 	; >>>>> while(temp->next->priority < task->priority) { 
 	mov	ax, word [bp+4]
 	mov	word [bp-2], ax
-	; >>>>> Line:	193
+	; >>>>> Line:	195
 	; >>>>> while(temp->next->priority < task->priority) { 
 	jmp	L_yakc_49
 L_yakc_48:
-	; >>>>> Line:	194
+	; >>>>> Line:	196
 	; >>>>> temp = temp->next; 
 	mov	si, word [bp-2]
 	add	si, 8
@@ -476,36 +482,36 @@ L_yakc_49:
 	cmp	al, byte [si]
 	ja	L_yakc_48
 L_yakc_50:
-	; >>>>> Line:	196
-	; >>>>> task->next = temp->next; 
+	; >>>>> Line:	198
+	; >>>>> task->next = t 
 	mov	si, word [bp-2]
 	add	si, 8
 	mov	di, word [bp+6]
 	add	di, 8
 	mov	ax, word [si]
 	mov	word [di], ax
-	; >>>>> Line:	197
-	; >>>>> task- 
+	; >>>>> Line:	199
+	; >>>>> task->next->prev = task; 
 	mov	si, word [bp+6]
 	add	si, 8
 	mov	si, word [si]
 	add	si, 10
 	mov	ax, word [bp+6]
 	mov	word [si], ax
-	; >>>>> Line:	198
+	; >>>>> Line:	200
 	; >>>>> task->prev = temp; 
 	mov	si, word [bp+6]
 	add	si, 10
 	mov	ax, word [bp-2]
 	mov	word [si], ax
-	; >>>>> Line:	199
+	; >>>>> Line:	201
 	; >>>>> temp->next = task; 
 	mov	si, word [bp-2]
 	add	si, 8
 	mov	ax, word [bp+6]
 	mov	word [si], ax
 L_yakc_47:
-	; >>>>> Line:	201
+	; >>>>> Line:	203
 	; >>>>> return queue_head; 
 	mov	ax, word [bp+4]
 L_yakc_45:
@@ -519,21 +525,21 @@ L_yakc_42:
 	jmp	L_yakc_43
 	ALIGN	2
 dequeue:
-	; >>>>> Line:	204
+	; >>>>> Line:	206
 	; >>>>> TCBptr dequeue(TCBptr queue_head){ 
 	jmp	L_yakc_52
 L_yakc_53:
-	; >>>>> Line:	206
+	; >>>>> Line:	208
 	; >>>>> queue_head = queue_head->next; 
 	mov	ax, word [bp+4]
 	mov	word [bp-2], ax
-	; >>>>> Line:	206
+	; >>>>> Line:	208
 	; >>>>> queue_head = queue_head->next; 
 	mov	si, word [bp+4]
 	add	si, 8
 	mov	ax, word [si]
 	mov	word [bp+4], ax
-	; >>>>> Line:	213
+	; >>>>> Line:	215
 	; >>>>> return next; 
 	mov	ax, word [bp-2]
 L_yakc_54:
@@ -547,19 +553,19 @@ L_yakc_52:
 	jmp	L_yakc_53
 	ALIGN	2
 suspendTask:
-	; >>>>> Line:	216
+	; >>>>> Line:	218
 	; >>>>> void suspendTask(TCBptr task){ 
 	jmp	L_yakc_56
 L_yakc_57:
-	; >>>>> Line:	218
+	; >>>>> Line:	220
 	; >>>>> task->state = 2; 
 	mov	word [bp-2], 0
-	; >>>>> Line:	218
+	; >>>>> Line:	220
 	; >>>>> task->state = 2; 
 	mov	si, word [bp+4]
 	add	si, 2
 	mov	word [si], 2
-	; >>>>> Line:	219
+	; >>>>> Line:	221
 	; >>>>> if(task->delay < YKSuspList->delay){ 
 	mov	si, word [bp+4]
 	add	si, 6
@@ -568,7 +574,7 @@ L_yakc_57:
 	mov	ax, word [di]
 	cmp	ax, word [si]
 	jle	L_yakc_58
-	; >>>>> Line:	220
+	; >>>>> Line:	222
 	; >>>>> YKSuspList->delay -= task->delay; 
 	mov	si, word [YKSuspList]
 	add	si, 6
@@ -576,30 +582,30 @@ L_yakc_57:
 	add	di, 6
 	mov	ax, word [di]
 	sub	word [si], ax
-	; >>>>> Line:	221
+	; >>>>> Line:	223
 	; >>>>> YKSuspList = task; 
 	mov	ax, word [bp+4]
 	mov	word [YKSuspList], ax
 	jmp	L_yakc_59
 L_yakc_58:
-	; >>>>> Line:	225
+	; >>>>> Line:	227
 	; >>>>> temp = YKSuspList; 
 	mov	ax, word [YKSuspList]
 	mov	word [bp-2], ax
-	; >>>>> Line:	226
+	; >>>>> Line:	228
 	; >>>>> while(temp->next != 0 && temp->delay < task->delay){ 
 	jmp	L_yakc_61
 L_yakc_60:
-	; >>>>> Line:	227
-	; >>>>> task->delay -= temp->delay; 
+	; >>>>> Line:	229
+	; >>>>> task->delay -= temp->d 
 	mov	si, word [bp+4]
 	add	si, 6
 	mov	di, word [bp-2]
 	add	di, 6
 	mov	ax, word [di]
 	sub	word [si], ax
-	; >>>>> Line:	228
-	; >>>>> temp = te 
+	; >>>>> Line:	230
+	; >>>>> temp = temp->next; 
 	mov	si, word [bp-2]
 	add	si, 8
 	mov	ax, word [si]
@@ -619,7 +625,7 @@ L_yakc_61:
 	jg	L_yakc_60
 L_yakc_63:
 L_yakc_62:
-	; >>>>> Line:	230
+	; >>>>> Line:	232
 	; >>>>> if(temp->delay < task->delay) { 
 	mov	si, word [bp-2]
 	add	si, 6
@@ -628,7 +634,7 @@ L_yakc_62:
 	mov	ax, word [di]
 	cmp	ax, word [si]
 	jle	L_yakc_64
-	; >>>>> Line:	231
+	; >>>>> Line:	233
 	; >>>>> task->delay -= temp->delay; 
 	mov	si, word [bp+4]
 	add	si, 6
@@ -636,13 +642,13 @@ L_yakc_62:
 	add	di, 6
 	mov	ax, word [di]
 	sub	word [si], ax
-	; >>>>> Line:	232
+	; >>>>> Line:	234
 	; >>>>> temp->next = task; 
 	mov	si, word [bp-2]
 	add	si, 8
 	mov	ax, word [bp+4]
 	mov	word [si], ax
-	; >>>>> Line:	233
+	; >>>>> Line:	235
 	; >>>>> task->prev = temp; 
 	mov	si, word [bp+4]
 	add	si, 10
@@ -650,7 +656,7 @@ L_yakc_62:
 	mov	word [si], ax
 	jmp	L_yakc_65
 L_yakc_64:
-	; >>>>> Line:	235
+	; >>>>> Line:	237
 	; >>>>> task->prev = temp->prev; 
 	mov	si, word [bp-2]
 	add	si, 10
@@ -658,19 +664,19 @@ L_yakc_64:
 	add	di, 10
 	mov	ax, word [si]
 	mov	word [di], ax
-	; >>>>> Line:	236
+	; >>>>> Line:	238
 	; >>>>> task->next = temp; 
 	mov	si, word [bp+4]
 	add	si, 8
 	mov	ax, word [bp-2]
 	mov	word [si], ax
-	; >>>>> Line:	237
+	; >>>>> Line:	239
 	; >>>>> temp->prev = task; 
 	mov	si, word [bp-2]
 	add	si, 10
 	mov	ax, word [bp+4]
 	mov	word [si], ax
-	; >>>>> Line:	238
+	; >>>>> Line:	240
 	; >>>>> temp->delay -= task->delay; 
 	mov	si, word [bp-2]
 	add	si, 6

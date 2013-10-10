@@ -174,6 +174,8 @@ void YKIdle() { /* Idle task for the kernel */
 	int i;
 	while(1) {
 		YKIdleCount++;
+		i = 0;
+		i = 0;
 	//	for(i = 0; i < 500; i++) {
 	//		printString("Idle geese");
 	//	}
