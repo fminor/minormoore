@@ -14,6 +14,9 @@ int YKCtxSwCount; /* Global variable tracking context switches */
 int YKIdleCount; /* Global variable used by idle task */
 int YKTickNum; /* Global variable incremented by tick handler */
 
+int activeTasks;
+
+TCBptr runningTask;		/* the task currently running */
 TCBptr YKRdyList;		/* a list of TCBs of all ready tasks
 				   in order of decreasing priority */ 
 TCBptr YKSuspList;		/* tasks delayed or suspended */
@@ -27,6 +30,7 @@ int IStk[ISTACKSIZE];
 void YKInitialize() { /* Initializes all required kernel data structures */
 	int i;
 	TCBptr tempList;
+	activeTasks = 0;
 	YKCtxSwCount = 0;
 	YKIdleCount = 0;
 	YKTickNum = 0;
@@ -35,7 +39,7 @@ void YKInitialize() { /* Initializes all required kernel data structures */
 	YKSuspList = NULL;
 	YKAvailTCBList = YKTCBArray;
 	YKTCBArray[0].prev = NULL;
-	for(i = 0; i < MAXTASKS + 1; i++){ /* put the YKTCBArray into the available TCB list */
+	for(i = 0; i < MAXTASKS + 1; i++){ /* put the YKTCBArray into the available TCB list */ // this doesn't work
 		YKTCBArray[i].next = &YKTCBArray[i + 1];
 		YKTCBArray[i + 1].prev = &YKTCBArray[i];
 	}
@@ -48,7 +52,9 @@ void YKInitialize() { /* Initializes all required kernel data structures */
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* Creates a new task */
 	int ip,sp;
 	// Need to write the assembly function	
-	TCBptr new_task = YKAvailTCBList++;
+	//TCBptr new_task = dequeue(YKAvailTCBList);
+	TCBptr new_task = &YKTCBArray[activeTasks];
+	activeTasks++;
 	new_task->priority = priority;
 	new_task->state = READY;
 	new_task->sp = taskStack;
@@ -57,6 +63,7 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 	ip = (int) task & 0xFFFF;
 	sp = (int) taskStack & 0xFFFF;
 	initStack(ip,sp);
+	printString("initialized\n\r");
 	// assembly function:
 	// push flags
 	// push CS - 0
@@ -69,13 +76,14 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 
 //3
 void YKRun() { /* Starts actual execution of user code */
+	printString("run\n\r");
 	YKScheduler();
 }
 
 void YKDelayTask(int count) { /* Delays a task for specified number of clock ticks*/
-	//remove(YKRdyList,task)
-	//task->delay=count
-	//queue(YkSuspList,task)
+	//TCBptr task = remove(YKRdyList,task);
+	runningTask->delay=count;
+	suspendTask(runningTask);
 }
 
 void YKEnterMutex() { /* Disables interrupts */
@@ -102,12 +110,15 @@ void YKExitISR() { /* Called on exit from ISR */
 //2.5
 void YKScheduler() { /* Determines the highest priority ready task */
 	TCBptr next = dequeue(YKRdyList);
+	printString("Scheduler\n\r");
 	YKDispatcher(next);
 }
 
 //2.5
 void YKDispatcher(TCBptr next) { /* Begins or resumes execution of the next task */
 	void* sp;
+	printString("Dispatcher\n\r");
+	runningTask = next;
 	sp = next->sp;
 	next->state = RUNNING;
 	dispatchTask(sp);
@@ -134,7 +145,7 @@ void YKIdle() { /* Idle task for the kernel */
 
 TCBptr queue(TCBptr queue_head, TCBptr task){
 	if(queue_head == NULL){
-		return queue_head;
+		return task;
 	}
 	if(queue_head->priority > task->priority){
 		task->next = queue_head;
@@ -161,6 +172,7 @@ TCBptr dequeue(TCBptr queue_head){
 
 void suspendTask(TCBptr task){
 	TCBptr temp = NULL;
+	task->state = DELAYED;
 	if(task->delay < YKSuspList->delay){
 		YKSuspList->delay -= task->delay;
                 YKSuspList = task;

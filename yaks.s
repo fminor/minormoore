@@ -25,28 +25,36 @@
 ; flags = 0000 0010 0000 0000 = 0x0200  
 ; flags are: {15,14,13,12,11(OF),10(DF),9(IF),8(TF),7(SF),6(ZF),5,4(AF),3,2(PF),1,0(CF)}
 initStack:
-	push bp		;
-	mov bp,sp	;
-	mov ax, 0x0	; 
+	push bp					;
+	push ax					;
+	push bx					;
+	push cx					;
+	push dx					;
+	mov bp,sp				;
+	mov ax, 0x0				; 
 	mov bx, word[bp + 6]	; Store TCB sp in bx
 	mov cx, word[bp + 4]	; store ip in cx
-	mov dx, 0x0200	; Store flags in dx
+	mov dx, 0x0200			; Store flags in dx
 	mov sp, word[bp + 6]	; Change stack pointer to TCB stack
-	push dx		; Push flags
-	push ax		; Push cs
-	push cx		; Push ip
-	push bx		; Push bp
-	push ax		; Push 0 onto stack 8 times
-	push ax		; 2
-	push ax		; 3
-	push ax		; 4
-	push ax		; 5
-	push ax		; 6
-	push ax		; 7
-	push ax		; 8
-	mov sp,bp	; Restore stack pointer
-	pop bp		;
-	ret		; Return
+	push dx					; Push flags
+	push ax					; Push cs
+	push cx					; Push ip
+	push bx					; Push bp
+	push ax					; Push 0 onto stack 8 times
+	push ax					; 2
+	push ax					; 3
+	push ax					; 4
+	push ax					; 5
+	push ax					; 6
+	push ax					; 7
+	push ax					; 8
+	mov sp,bp				; Restore stack pointer
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	pop bp					;
+	ret						; Return
 
 dispatchTask:
 	push bp			;

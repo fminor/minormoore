@@ -3,7 +3,7 @@
 # 1 "<command-line>"
 # 1 "yakc.c"
 # 9 "yakc.c"
-# 1 "../clib.h" 1
+# 1 "clib.h" 1
 
 
 
@@ -88,6 +88,9 @@ int YKCtxSwCount;
 int YKIdleCount;
 int YKTickNum;
 
+int activeTasks;
+
+TCBptr runningTask;
 TCBptr YKRdyList;
 
 TCBptr YKSuspList;
@@ -101,6 +104,7 @@ int IStk[255];
 void YKInitialize() {
  int i;
  TCBptr tempList;
+ activeTasks = 0;
  YKCtxSwCount = 0;
  YKIdleCount = 0;
  YKTickNum = 0;
@@ -122,7 +126,9 @@ void YKInitialize() {
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
  int ip,sp;
 
- TCBptr new_task = YKAvailTCBList++;
+
+ TCBptr new_task = &YKTCBArray[activeTasks];
+ activeTasks++;
  new_task->priority = priority;
  new_task->state = 0;
  new_task->sp = taskStack;
@@ -131,6 +137,7 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
  ip = (int) task & 0xFFFF;
  sp = (int) taskStack & 0xFFFF;
  initStack(ip,sp);
+ printString("initialized\n\r");
 
 
 
@@ -143,13 +150,14 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
 
 
 void YKRun() {
+ printString("run\n\r");
  YKScheduler();
 }
 
 void YKDelayTask(int count) {
 
-
-
+ runningTask->delay=count;
+ suspendTask(runningTask);
 }
 
 void YKEnterMutex() {
@@ -176,12 +184,15 @@ void YKExitISR() {
 
 void YKScheduler() {
  TCBptr next = dequeue(YKRdyList);
+ printString("Scheduler\n\r");
  YKDispatcher(next);
 }
 
 
 void YKDispatcher(TCBptr next) {
  void* sp;
+ printString("Dispatcher\n\r");
+ runningTask = next;
  sp = next->sp;
  next->state = 1;
  dispatchTask(sp);
@@ -208,7 +219,7 @@ void YKIdle() {
 
 TCBptr queue(TCBptr queue_head, TCBptr task){
  if(queue_head == 0){
-  return queue_head;
+  return task;
  }
  if(queue_head->priority > task->priority){
   task->next = queue_head;
@@ -235,6 +246,7 @@ TCBptr dequeue(TCBptr queue_head){
 
 void suspendTask(TCBptr task){
  TCBptr temp = 0;
+ task->state = 2;
  if(task->delay < YKSuspList->delay){
   YKSuspList->delay -= task->delay;
                 YKSuspList = task;
