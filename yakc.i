@@ -70,7 +70,7 @@ void YKTickHandler();
 
 
 void YKIdle();
-void initStack(int, int);
+int initStack(int, int);
 TCBptr queue(TCBptr, TCBptr);
 TCBptr dequeue(TCBptr);
 void suspendTask(TCBptr);
@@ -119,7 +119,7 @@ void YKInitialize() {
  }
 
  YKNewTask(YKIdle, (void*)&IStk[255],255);
-
+ printString("\n\n\n\ninitialized\n");
 }
 
 
@@ -131,13 +131,17 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
  activeTasks++;
  new_task->priority = priority;
  new_task->state = 0;
- new_task->sp = taskStack;
+
  new_task->delay = 0;
  YKRdyList = queue(YKRdyList,new_task);
  ip = (int) task & 0xFFFF;
  sp = (int) taskStack & 0xFFFF;
- initStack(ip,sp);
- printString("initialized\n\r");
+ sp = initStack(ip,sp);
+ new_task->sp = (void*)sp;
+ printString("newTask\n\r");
+ if(runningTask != 0){
+  YKScheduler();
+ }
 
 
 
@@ -183,9 +187,17 @@ void YKExitISR() {
 
 
 void YKScheduler() {
- TCBptr next = dequeue(YKRdyList);
- printString("Scheduler\n\r");
- YKDispatcher(next);
+ TCBptr next;
+
+
+
+ next = dequeue(YKRdyList);
+ if(runningTask != 0 && next->priority > runningTask->priority){
+  queue(YKRdyList,next);
+ }else {
+  printString("Scheduler\n\r");
+  YKDispatcher(next);
+ }
 }
 
 

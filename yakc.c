@@ -45,7 +45,7 @@ void YKInitialize() { /* Initializes all required kernel data structures */
 	}
 	// Creates idle task
 	YKNewTask(YKIdle, (void*)&IStk[ISTACKSIZE],255);
-	
+	printString("\n\n\n\ninitialized\n");
 }
 
 //2
@@ -57,13 +57,17 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 	activeTasks++;
 	new_task->priority = priority;
 	new_task->state = READY;
-	new_task->sp = taskStack;
+	//new_task->sp = taskStack;
 	new_task->delay = 0;
 	YKRdyList = queue(YKRdyList,new_task);
 	ip = (int) task & 0xFFFF;
 	sp = (int) taskStack & 0xFFFF;
-	initStack(ip,sp);
-	printString("initialized\n\r");
+	sp = initStack(ip,sp);
+	new_task->sp = (void*)sp;
+	printString("newTask\n\r");
+	if(runningTask != NULL){
+		YKScheduler();
+	}
 	// assembly function:
 	// push flags
 	// push CS - 0
@@ -109,9 +113,15 @@ void YKExitISR() { /* Called on exit from ISR */
 
 //2.5
 void YKScheduler() { /* Determines the highest priority ready task */
-	TCBptr next = dequeue(YKRdyList);
+	TCBptr next;
 	printString("Scheduler\n\r");
-	YKDispatcher(next);
+	next = dequeue(YKRdyList);
+	if(runningTask != NULL && next->priority > runningTask->priority){
+		queue(YKRdyList,next);
+	}else {
+		queue(YKRdyList,runningTask);
+		YKDispatcher(next);
+	}
 }
 
 //2.5

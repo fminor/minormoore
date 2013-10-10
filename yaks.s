@@ -26,16 +26,16 @@
 ; flags are: {15,14,13,12,11(OF),10(DF),9(IF),8(TF),7(SF),6(ZF),5,4(AF),3,2(PF),1,0(CF)}
 initStack:
 	push bp					;
-	push ax					;
+	mov bp,sp				;
 	push bx					;
 	push cx					;
 	push dx					;
-	mov bp,sp				;
 	mov ax, 0x0				; 
-	mov bx, word[bp + 6]	; Store TCB sp in bx
-	mov cx, word[bp + 4]	; store ip in cx
-	mov dx, 0x0200			; Store flags in dx
-	mov sp, word[bp + 6]	; Change stack pointer to TCB stack
+	mov bx, word[bp + 6]			; Store TCB sp in bx
+	mov cx, word[bp + 4]			; store ip in cx
+	mov dx, 0x0200				; Store flags in dx
+	mov bp, sp
+	mov sp, bx				; Change stack pointer to TCB stack
 	push dx					; Push flags
 	push ax					; Push cs
 	push cx					; Push ip
@@ -47,12 +47,12 @@ initStack:
 	push ax					; 5
 	push ax					; 6
 	push ax					; 7
-	push ax					; 8
+	push ax					; 8  Everything is good to this point
+	mov ax,sp				; Save new sp
 	mov sp,bp				; Restore stack pointer
-	pop dx
+	pop dx					; Restore bx - dx, bp
 	pop cx
 	pop bx
-	pop ax
 	pop bp					;
 	ret						; Return
 

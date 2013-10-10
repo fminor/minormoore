@@ -75,7 +75,7 @@ void YKTickHandler();
 
 
 void YKIdle();
-void initStack(int, int);
+int initStack(int, int);
 TCBptr queue(TCBptr, TCBptr);
 TCBptr dequeue(TCBptr);
 void suspendTask(TCBptr);
