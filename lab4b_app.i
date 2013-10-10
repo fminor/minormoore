@@ -8,7 +8,7 @@
 
 
 
-# 1 "../clib.h" 1
+# 1 "clib.h" 1
 
 
 
@@ -65,8 +65,6 @@ void YKInitialize();
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority);
 void YKRun();
 void YKDelayTask(int count);
-void YKEnterMutex();
-void YKExitMutex();
 void YKEnterISR();
 void YKExitISR();
 void YKScheduler();
@@ -74,10 +72,12 @@ void YKDispatcher(TCBptr);
 void YKTickHandler();
 
 
+void YKEnterMutex();
+void YKExitMutex();
 void YKIdle();
 int initStack(int, int);
 TCBptr queue(TCBptr, TCBptr);
-TCBptr dequeue(TCBptr*);
+TCBptr dequeue(TCBptr);
 void suspendTask(TCBptr);
 void dispatchTask(void* );
 

@@ -16,7 +16,7 @@ L_lab4b_app_4:
 	; >>>>> YKInitialize(); 
 	call	YKInitialize
 	; >>>>> Line:	26
-	; >>>>> printString(" 
+	; >>>>> printString("Crea 
 	mov	ax, L_lab4b_app_1
 	push	ax
 	call	printString
@@ -127,7 +127,7 @@ BTask:
 	jmp	L_lab4b_app_14
 L_lab4b_app_15:
 	; >>>>> Line:	49
-	; >>>>> printString("Task  
+	; >>>>> printString("Task B st 
 	mov	ax, L_lab4b_app_13
 	push	ax
 	call	printString

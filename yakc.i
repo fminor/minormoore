@@ -3,7 +3,7 @@
 # 1 "<command-line>"
 # 1 "yakc.c"
 # 9 "yakc.c"
-# 1 "../clib.h" 1
+# 1 "clib.h" 1
 
 
 
@@ -60,8 +60,6 @@ void YKInitialize();
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority);
 void YKRun();
 void YKDelayTask(int count);
-void YKEnterMutex();
-void YKExitMutex();
 void YKEnterISR();
 void YKExitISR();
 void YKScheduler();
@@ -69,10 +67,12 @@ void YKDispatcher(TCBptr);
 void YKTickHandler();
 
 
+void YKEnterMutex();
+void YKExitMutex();
 void YKIdle();
 int initStack(int, int);
 TCBptr queue(TCBptr, TCBptr);
-TCBptr dequeue(TCBptr*);
+TCBptr dequeue(TCBptr);
 void suspendTask(TCBptr);
 void dispatchTask(void* );
 
@@ -119,7 +119,7 @@ void YKInitialize() {
  }
 
  YKNewTask(YKIdle, (void*)&IStk[255],255);
- printString("\n\n\n\ninitialized\n");
+
 }
 
 
@@ -128,7 +128,7 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
 
 
  TCBptr new_task = &YKTCBArray[activeTasks];
- printString("newTask\n\r");
+
  activeTasks++;
  new_task->priority = priority;
  new_task->state = 0;
@@ -139,12 +139,12 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
  sp = initStack(ip,sp);
  new_task->sp = (void*)sp;
 
- printString("Creating task of priority ");
- printInt(priority);
- printNewLine();
- printString("Active tasks: ");
- printInt(activeTasks);
- printNewLine();
+
+
+
+
+
+
  if(runningTask != 0){
   YKScheduler();
  }
@@ -155,7 +155,7 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) {
 
 
 void YKRun() {
- printString("run\n\r");
+
  YKScheduler();
 }
 
@@ -164,20 +164,7 @@ void YKDelayTask(int count) {
  runningTask->delay=count;
  suspendTask(runningTask);
 }
-
-void YKEnterMutex() {
-
-
-
-}
-
-void YKExitMutex() {
-
-
-
-}
-
-
+# 107 "yakc.c"
 void YKEnterISR() {
 
 }
@@ -189,34 +176,18 @@ void YKExitISR() {
 
 void YKScheduler() {
  TCBptr next;
- printString("Scheduler\n\r");
- printString("Next task priority before dequeue: ");
- printInt(YKRdyList->priority);
- printNewLine();
- next = dequeue(&YKRdyList);
- printString("Next task priority after dequeue: ");
- printInt(YKRdyList->priority);
- printNewLine();
- if(runningTask != 0)
-  printString("runningTask is not NULL\n");
- else
-  printString("runningTask is NULL\n");
- if(next->priority != 0 && runningTask!=0) {
-  printInt(next->priority);
-  printNewLine();
-  if(next->prev != 0)
-   printString("Next task has a previous task");
-  else
-   printString("next->prev = NULL");
-  printNewLine();
-  printInt(runningTask->priority);
-  printNewLine();
- }
+
+
+
+
+ next = dequeue(YKRdyList);
+# 141 "yakc.c"
  if((runningTask != 0) && (next->priority > runningTask->priority)){
-  printString("Branch 1\n");
+
   YKRdyList = queue(YKRdyList,next);
  }else {
-  printString("Branch 2\n");
+
+  YKCtxSwCount++;
   YKRdyList = queue(YKRdyList,runningTask);
   YKDispatcher(next);
  }
@@ -225,19 +196,20 @@ void YKScheduler() {
 
 void YKDispatcher(TCBptr next) {
  void* sp;
- printString("Dispatcher\n\r");
+
  runningTask = next;
  sp = next->sp;
  next->state = 1;
+ YKEnterMutex();
  dispatchTask(sp);
-
+ YKExitMutex();
 }
 
 void YKTickHandler() {
 
  YKSuspList->delay = YKSuspList->delay - 1;
  if(YKSuspList->delay == 0){
-  TCBptr task = dequeue(&YKSuspList);
+  TCBptr task = dequeue(YKSuspList);
   YKRdyList = queue(YKRdyList,task);
  }
 }
@@ -245,9 +217,10 @@ void YKTickHandler() {
 void YKIdle() {
  int i;
  while(1) {
-  for(i = 0; i < 500; i++) {
-   printString("Idle geese");
-  }
+  YKIdleCount++;
+
+
+
  }
 }
 
@@ -272,15 +245,15 @@ TCBptr queue(TCBptr queue_head, TCBptr task){
  return queue_head;
 }
 
-TCBptr dequeue(TCBptr* queue_head){
- TCBptr next = *queue_head;
- queue_head = (*queue_head)->next;
- printString("Next task priority :");
- printInt(next->priority);
- printNewLine();
- printString("Next next task priorty: ");
- printInt((*queue_head)->priority);
- printNewLine();
+TCBptr dequeue(TCBptr queue_head){
+ TCBptr next = queue_head;
+ queue_head = queue_head->next;
+
+
+
+
+
+
  return next;
 }
 
