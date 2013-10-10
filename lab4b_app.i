@@ -8,7 +8,7 @@
 
 
 
-# 1 "clib.h" 1
+# 1 "../clib.h" 1
 
 
 
@@ -77,7 +77,7 @@ void YKTickHandler();
 void YKIdle();
 int initStack(int, int);
 TCBptr queue(TCBptr, TCBptr);
-TCBptr dequeue(TCBptr);
+TCBptr dequeue(TCBptr*);
 void suspendTask(TCBptr);
 void dispatchTask(void* );
 

@@ -2,7 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "cInt.c"
-# 1 "clib.h" 1
+# 1 "../clib.h" 1
 
 
 

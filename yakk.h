@@ -55,7 +55,7 @@ void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 void YKIdle(); /* Idle task for the kernel */
 int initStack(int, int); /* Assembely Function that initializes stack for new functions */
 TCBptr queue(TCBptr, TCBptr); /* Puts task onto prioritized queue */
-TCBptr dequeue(TCBptr); /* Removes head of queue */
+TCBptr dequeue(TCBptr*); /* Removes head of queue, returns removed node */
 void suspendTask(TCBptr); /* Puts onto delayed queue */
 void dispatchTask(void* ); 
 
