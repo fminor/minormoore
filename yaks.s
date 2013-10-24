@@ -55,13 +55,51 @@ initStack:
 	pop bx
 	pop bp					;
 	ret						; Return
+
+
+
+;YKSaveContext saves context in case we switch tasks
+;ctx ret to task         <-old word[word[bp] + 2]
+;ctx bp                  <-old bp = word[bp]
+;caller local variables
+;ret add to delay task   <- 24 
+;cs                      <- 22
+;ip                      <- 20
+;ctx bp                  <- 18
+;es                      <- 16
+;ds                      <- 14
+;di                      <- 12
+;si                      <- 10
+;dx                      <- 8
+;cx                      <- 6 
+;bx                      <- sp + 4
+;ax                      <- sp + 2(Save sp here)
+;ret add to dispatcher   <- sp
+;(Change bp to sp, so we don't overwrite everything we just did)
 YKSaveContext:
-	;ctx ret		; old bp+2 IP
-	;pushf
-	;push cs
-	;push ctx ret
-	;push es-ax
-	;ret - bp+2 -> bp-18 Goes back to what called this function
+	pushf 			; push flags
+	push cs 		; push cs
+	push word[bp + 2]	; push ctx ret
+	push bp			; push old bp, this will clean up the stack when we return to the task
+
+	push es			; push es,ds,di,si,dx,cx,bx,ax
+	push ds			;
+	push di			;
+	push si			;
+	push dx			;
+	push cx			;
+	push bx			;
+	push ax			;
+	push sp			; Save stack pointer
+	call saveStack		;
+	pop ax			; Remove stack from stack
+				; 
+				; Warning: base pointer will have changed, 
+				; all uses of local variables must be done by caller
+	mov si, sp		;
+	add si, 24		;
+	push word[si]		; Push ret address 
+	mov bp, sp		; Change bp to current stack
 	ret
 
 dispatchTask:

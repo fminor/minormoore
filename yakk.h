@@ -59,6 +59,7 @@ TCBptr dequeue(TCBptr*); /* Removes head of queue, returns removed node */
 TCBptr peak(TCBptr); /*Returns head of queue */
 void suspendTask(TCBptr); /* Puts onto delayed queue */
 void dispatchTask(void* ); 
+void YKSaveContext();
 
 /* Global Variables */
 
