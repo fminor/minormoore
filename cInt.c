@@ -7,13 +7,6 @@ void handleReset(){
 // Global variable n for tick
 extern int YKTickNum;
 
-void handleTick(){
-	printNewLine();
-	printString("Tick ");
-	printInt(YKTickNum);
-	printNewLine();
-	YKTickNum++;
-}
 
 
 void handleKeyboard(){

@@ -1,7 +1,7 @@
 ; Filename: yaks.s 
 ; Dayton Minor
 ; Jared Moore
-; Lab4a
+; Lab4c
 ;
 
 
@@ -71,8 +71,6 @@ dispatchTask:
 	pop bp			;
 	iret			; Return
 		 
-	 
-	
 YKEnterMutex:
 	push bp
 	mov bp, sp
@@ -92,6 +90,7 @@ YKExitMutex:
 YKEnterISR:
 	inc word[YKISRDepth]
 	ret
+
 YKExitISR:
 	dec word[YKISRDepth]
 	cmp word[YKISRDepth], 0

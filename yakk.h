@@ -2,7 +2,7 @@
  * Dayton Minor
  * Jared Moore
  * Contains kernel stuff
- * Lab 4b
+ * Lab 4c
  *
  * */
 
@@ -55,7 +55,7 @@ void YKExitMutex(); /* Enables interrupts */
 void YKIdle(); /* Idle task for the kernel */
 int initStack(int, int); /* Assembely Function that initializes stack for new functions */
 TCBptr queue(TCBptr, TCBptr); /* Puts task onto prioritized queue */
-TCBptr dequeue(TCBptr); /* Removes head of queue, returns removed node */
+TCBptr dequeue(TCBptr*); /* Removes head of queue, returns removed node */
 TCBptr peak(TCBptr); /*Returns head of queue */
 void suspendTask(TCBptr); /* Puts onto delayed queue */
 void dispatchTask(void* ); 

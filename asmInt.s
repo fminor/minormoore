@@ -14,9 +14,9 @@ ResetISR:
 	sti
 	call handleReset
 	cli
-	call YKExitISR
 	mov al, 0x20	; Load nonspecific EOI value into register al
 	out 0x20, al	; Write EOI to PIC (port 0x20)
+	call YKExitISR
 	pop ax			;
 	pop bx			;
 	pop cx			;
@@ -39,16 +39,18 @@ TickISR:
 	push cx 
 	push bx
 	push ax
-	mov ax, word[runningTask]
+;	mov ax, word[runningTask]
 ;	mov [ax], sp			;this line is necessary
-	mov word[ax], sp
 	call YKEnterISR
+	push sp;
+	call saveStack
 	sti 
 	call YKTickHandler
+	pop ax
 	cli
-	call YKExitISR
 	mov al, 0x20		; Load nonspecific EOI value into register al
 	out 0x20, al		; Write EOI to PIC (port 0x20)
+	call YKExitISR
 	pop ax			;
 	pop bx			;
 	pop cx			;
@@ -75,9 +77,9 @@ KeyboardISR:
 	sti 
 	call handleKeyboard
 	cli
- 	call YKExitISR
 	mov al, 0x20	; Load nonspecific EOI value into register al
 	out 0x20, al	; Write EOI to PIC (port 0x20)
+ 	call YKExitISR
 	pop ax			;
 	pop bx			;
 	pop cx			;
