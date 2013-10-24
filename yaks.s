@@ -55,6 +55,14 @@ initStack:
 	pop bx
 	pop bp					;
 	ret						; Return
+YKSaveContext:
+	;ctx ret		; old bp+2 IP
+	;pushf
+	;push cs
+	;push ctx ret
+	;push es-ax
+	;ret - bp+2 -> bp-18 Goes back to what called this function
+	ret
 
 dispatchTask:
 	push bp			;
