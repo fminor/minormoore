@@ -81,7 +81,7 @@ YKEnterMutex:
 	pop bp
 	ret
 
-YKExitMutex
+YKExitMutex:
 	push bp
 	mov bp, sp
 	sti
@@ -89,4 +89,11 @@ YKExitMutex
 	pop bp
 	ret
 	
-
+YKEnterISR:
+	inc word[YKISRDepth]
+	ret
+YKExitISR:
+	dec word[YKISRDepth]
+	cmp word[YKISRDepth], 0
+	je YKScheduler
+	ret
