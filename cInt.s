@@ -21,9 +21,6 @@ L_cInt_1:
 	push	bp
 	mov	bp, sp
 	jmp	L_cInt_2
-	ALIGN	2
-n:
-	DW	0
 L_cInt_4:
 	DB	"Tick ",0
 	ALIGN	2
@@ -42,16 +39,16 @@ L_cInt_6:
 	call	printString
 	add	sp, 2
 	; >>>>> Line:	13
-	; >>>>> printInt(n); 
-	push	word [n]
+	; >>>>> printInt(YKTickNum); 
+	push	word [YKTickNum]
 	call	printInt
 	add	sp, 2
 	; >>>>> Line:	14
 	; >>>>> printNewLine(); 
 	call	printNewLine
 	; >>>>> Line:	15
-	; >>>>> n++; 
-	inc	word [n]
+	; >>>>> YKTickNum++; 
+	inc	word [YKTickNum]
 	mov	sp, bp
 	pop	bp
 	ret

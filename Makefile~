@@ -4,7 +4,7 @@
 # 9/23/2013
 
 all:
-	cpp -I ../ lab4c_app.c lab4c_app.i
+	cpp -I ../ lab4b_app.c lab4c_app.i
 	cpp -I ../ cInt.c cInt.i
 	cpp -I ../ yakc.c yakc.i
 	c86 -g lab4c_app.i lab4c_app.s

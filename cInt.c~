@@ -5,14 +5,14 @@ void handleReset(){
 }
 
 // Global variable n for tick
-extern int YKTickNum;
+int n = 0;
 
 void handleTick(){
 	printNewLine();
 	printString("Tick ");
-	printInt(YKTickNum);
+	printInt(n);
 	printNewLine();
-	YKTickNum++;
+	n++;
 }
 
 

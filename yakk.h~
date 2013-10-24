@@ -43,6 +43,8 @@ void YKInitialize(); /* Initializes all required kernel data structures */
 void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority); /* Creates a new task */
 void YKRun(); /* Starts actual execution of user code */
 void YKDelayTask(int count); /* Delays a task for specified number of clock ticks*/
+void YKEnterMutex(); /* Disables interrupts */
+void YKExitMutex(); /* Enables interrupts */
 void YKEnterISR(); /* Called on entry to ISR */
 void YKExitISR(); /* Called on exit from ISR */
 void YKScheduler(); /* Determines the highest priority ready task and gives to dispatcher */
@@ -50,13 +52,10 @@ void YKDispatcher(TCBptr); /* Begins or resumes execution of the next task */
 void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 
 /* Custom Kernel Functions */
-void YKEnterMutex(); /* Disables interrupts */
-void YKExitMutex(); /* Enables interrupts */
 void YKIdle(); /* Idle task for the kernel */
-int initStack(int, int); /* Assembely Function that initializes stack for new functions */
+void initStack(int, int); /* Assembely Function that initializes stack for new functions */
 TCBptr queue(TCBptr, TCBptr); /* Puts task onto prioritized queue */
-TCBptr dequeue(TCBptr); /* Removes head of queue, returns removed node */
-TCBptr peak(TCBptr); /*Returns head of queue */
+TCBptr dequeue(TCBptr); /* Removes head of queue */
 void suspendTask(TCBptr); /* Puts onto delayed queue */
 void dispatchTask(void* ); 
 

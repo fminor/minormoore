@@ -1,84 +1,90 @@
 ; ISR responsible for saving state
 ; ISR for Reset (Ctrl-R)
 ResetISR:
-	push ax
-	push bx
-	push cx 
-	push dx
-	push si
-	push di
 	push bp
 	push es
-	push ds 
+	push ds
+	push di
+	push si
+	push dx
+	push cx 
+	push bx
+	push ax
+	call YKEnterISR
 	sti
 	call handleReset
 	cli
-	pop ds
-	pop es
-	pop bp
-	pop di
-	pop si
-	pop dx
-	pop cx
-	pop bx
+	call YKExitISR
 	mov al, 0x20	; Load nonspecific EOI value into register al
 	out 0x20, al	; Write EOI to PIC (port 0x20)
-	pop ax
+	pop ax			;
+	pop bx			;
+	pop cx			;
+	pop dx			;
+	pop si			;
+	pop di			;
+	pop ds			;
+	pop es			;
+	pop bp
 	iret
 
 ; ISR for Tick (Ctrl-T)
 TickISR:
-	push ax
-	push bx
-	push cx 
-	push dx
-	push si
-	push di
 	push bp
 	push es
 	push ds
-
+	push di
+	push si
+	push dx
+	push cx 
+	push bx
+	push ax
+	mov ax, word[runningTask]
+;	mov [ax], sp			;this line is necessary
+	mov word[ax], sp
+	call YKEnterISR
 	sti 
-	call handleTick
+	call YKTickHandler
 	cli
-
-	pop ds
-	pop es
+	call YKExitISR
+	mov al, 0x20		; Load nonspecific EOI value into register al
+	out 0x20, al		; Write EOI to PIC (port 0x20)
+	pop ax			;
+	pop bx			;
+	pop cx			;
+	pop dx			;
+	pop si			;
+	pop di			;
+	pop ds			;
+	pop es			;
 	pop bp
-	pop di
-	pop si
-	pop dx
-	pop cx
-	pop bx
-	mov al, 0x20	; Load nonspecific EOI value into register al
-	out 0x20, al	; Write EOI to PIC (port 0x20)
-	pop ax
 	iret
 
 ; ISR for Keyboard Interrupt (Any other key)
 KeyboardISR:
-	push ax
-	push bx
-	push cx 
-	push dx
-	push si
-	push di
 	push bp
 	push es
 	push ds
+	push di
+	push si
+	push dx
+	push cx 
+	push bx
+	push ax
+	call YKEnterISR
 	sti 
 	call handleKeyboard
 	cli
- 
-	pop ds
-	pop es
-	pop bp
-	pop di
-	pop si
-	pop dx
-	pop cx
-	pop bx
+ 	call YKExitISR
 	mov al, 0x20	; Load nonspecific EOI value into register al
 	out 0x20, al	; Write EOI to PIC (port 0x20)
-	pop ax
+	pop ax			;
+	pop bx			;
+	pop cx			;
+	pop dx			;
+	pop si			;
+	pop di			;
+	pop ds			;
+	pop es			;
+	pop bp
 	iret
