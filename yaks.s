@@ -77,8 +77,8 @@ initStack:
 ;ret add to dispatcher   <- sp
 ;(Change bp to sp, so we don't overwrite everything we just did)
 YKSaveContext:
-	;pushf 			; push flags
-	;push cs 		; push cs 
+	pushf 			; push flags
+	push cs 		; push cs 
 	push word[bp + 2]	; spot for ctx ret
 	push word[bp]		; push old bp, this will clean up the stack when we return to the task
 
@@ -92,12 +92,13 @@ YKSaveContext:
 	push ax			;
 	mov si, [runningTask]	; Save stack pointer
 	mov [si], sp		;
+;	mov si, word[bp]		; 
+;	add si, 2		;
+;	add sp, 20		;
+;	push word[si]		;
+;	sub sp, 18		;
 				; Leave stack
 	push word[bp - 4]	; Push ret address
-	mov [bp - 4], cs	;
-	pushf			;
-	pop ax			;
-	mov [bp - 2], ax	;
 	ret
 
 dispatchTask:
@@ -138,5 +139,11 @@ YKEnterISR:
 YKExitISR:
 	dec word[YKISRDepth]
 	cmp word[YKISRDepth], 0
-	je YKScheduler
+	je endISR
+	ret
+endISR:
+	mov ax, 1
+	push ax
+	call YKScheduler
+	pop ax
 	ret

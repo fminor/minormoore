@@ -104,7 +104,7 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 //	printInt(activeTasks);
 //	printNewLine();	
 	if(runningTask != NULL){
-		YKScheduler();
+		YKScheduler(0);
 	}
 
 }
@@ -116,7 +116,7 @@ void YKRun() { /* Starts actual execution of user code */
 //	printString("run\n\r");
 //	printList(YKRdyList);
 	started = 1;
-	YKScheduler();
+	YKScheduler(1);
 }
 
 void YKDelayTask(int count) { /* Delays a task for specified number of clock ticks*/
@@ -134,7 +134,7 @@ void YKDelayTask(int count) { /* Delays a task for specified number of clock tic
 //	printString("Delayed for: ");
 //	printInt(YKSuspList->delay);
 //	printNewLine();
-	YKScheduler();
+	YKScheduler(0);
 }
 
 //void YKEnterMutex() { /* Disables interrupts */
@@ -151,7 +151,7 @@ void YKDelayTask(int count) { /* Delays a task for specified number of clock tic
 
 
 //2.5
-void YKScheduler() { /* Determines the highest priority ready task */
+void YKScheduler(int contextSaved) { /* Determines the highest priority ready task */
 	TCBptr next;	
 	if(!started)
 		return;
@@ -167,13 +167,15 @@ void YKScheduler() { /* Determines the highest priority ready task */
 //		printString("Context Switch\n");
 		YKEnterMutex();
 		YKCtxSwCount++;
-		YKSaveContext();
+		if(contextSaved ==  0) {
+			YKSaveContext();
+		}
 		YKExitMutex();
 		YKDispatcher(next);
 	} else if (runningTask == NULL){
 	//YKRdyList = queue(YKRdyList,runningTask);
 		YKDispatcher(next);
-	}
+}
 //	}
 }
 
@@ -200,7 +202,7 @@ void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 	printNewLine();
 	//update tick info
 	YKTickNum++;
-
+	//while(YKTickNum > 20);
 
 	//decrement top of YKSuspList->delay
 	if(YKSuspList != NULL) {

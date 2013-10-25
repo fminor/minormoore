@@ -45,7 +45,7 @@ void YKRun(); /* Starts actual execution of user code */
 void YKDelayTask(int count); /* Delays a task for specified number of clock ticks*/
 void YKEnterISR(); /* Called on entry to ISR */
 void YKExitISR(); /* Called on exit from ISR */
-void YKScheduler(); /* Determines the highest priority ready task and gives to dispatcher */
+void YKScheduler(int); /* Determines the highest priority ready task and gives to dispatcher */
 void YKDispatcher(TCBptr); /* Begins or resumes execution of the next task */
 void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 
