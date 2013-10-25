@@ -77,10 +77,10 @@ initStack:
 ;ret add to dispatcher   <- sp
 ;(Change bp to sp, so we don't overwrite everything we just did)
 YKSaveContext:
-	pushf 			; push flags
-	push cs 		; push cs
-	push word[bp + 2]	; push ctx ret
-	push bp			; push old bp, this will clean up the stack when we return to the task
+	;pushf 			; push flags
+	;push cs 		; push cs 
+	push word[bp + 2]	; spot for ctx ret
+	push word[bp]		; push old bp, this will clean up the stack when we return to the task
 
 	push es			; push es,ds,di,si,dx,cx,bx,ax
 	push ds			;
@@ -90,16 +90,14 @@ YKSaveContext:
 	push cx			;
 	push bx			;
 	push ax			;
-	push sp			; Save stack pointer
-	call saveStack		;
-	pop ax			; Remove stack from stack
-				; 
-				; Warning: base pointer will have changed, 
-				; all uses of local variables must be done by caller
-	mov si, sp		;
-	add si, 24		;
-	push word[si]		; Push ret address 
-	mov bp, sp		; Change bp to current stack
+	mov si, [runningTask]	; Save stack pointer
+	mov [si], sp		;
+				; Leave stack
+	push word[bp - 4]	; Push ret address
+	mov [bp - 4], cs	;
+	pushf			;
+	pop ax			;
+	mov [bp - 2], ax	;
 	ret
 
 dispatchTask:

@@ -121,7 +121,6 @@ void YKRun() { /* Starts actual execution of user code */
 
 void YKDelayTask(int count) { /* Delays a task for specified number of clock ticks*/
 	runningTask->delay=count;
-	YKSaveContext();
 //	printString("Delayed Task: ");
 //	printInt(runningTask->priority);
 //	printNewLine();
@@ -168,10 +167,13 @@ void YKScheduler() { /* Determines the highest priority ready task */
 //		printString("Context Switch\n");
 		YKEnterMutex();
 		YKCtxSwCount++;
+		YKSaveContext();
 		YKExitMutex();
-	}
+		YKDispatcher(next);
+	} else if (runningTask == NULL){
 	//YKRdyList = queue(YKRdyList,runningTask);
-	YKDispatcher(next);
+		YKDispatcher(next);
+	}
 //	}
 }
 
@@ -193,9 +195,9 @@ void YKDispatcher(TCBptr next) { /* Begins or resumes execution of the next task
 void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 	//print Tick information
 //	printNewLine();
-//	printString("Tick ");
-//	printInt(YKTickNum);
-//	printNewLine();
+	printString("Tick ");
+	printInt(YKTickNum);
+	printNewLine();
 	//update tick info
 	YKTickNum++;
 
