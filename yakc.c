@@ -31,11 +31,12 @@ int IStk[ISTACKSIZE];
 void printList(TCBptr list) {
 	TCBptr tcb = list;
 	int safety = 0;
-	printString("Active tasks: ");
-	printInt(activeTasks);
+//	printString("Active tasks: ");
+//	printInt(activeTasks);
 	while(tcb != NULL && safety < (activeTasks + 10)) {
 		printString(" Task P: ");
 		printInt(tcb->priority);
+	//	printNewLine();
 		tcb = tcb->next;
 		safety++;
 	}
@@ -196,13 +197,13 @@ void YKDispatcher(TCBptr next) { /* Begins or resumes execution of the next task
 
 void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 	//print Tick information
-//	printNewLine();
+	printNewLine();
 	printString("Tick ");
 	printInt(YKTickNum);
 	printNewLine();
 	//update tick info
 	YKTickNum++;
-	//while(YKTickNum > 20);
+	while(YKTickNum > 20);
 
 	//decrement top of YKSuspList->delay
 	if(YKSuspList != NULL) {
@@ -219,6 +220,7 @@ void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 		//	YKSuspList = task->next;		/* update the suspended list */
 		//	task->next = NULL;			/* clean up the task */
 			YKRdyList = queue(YKRdyList,task);	/* put the task on the queue */
+		//	printList(YKRdyList);
 		}
 //		printString("Next ready task priority: ");
 //		printInt(YKRdyList->priority);
@@ -281,14 +283,18 @@ TCBptr dequeue(TCBptr* queue_head){
 
 void suspendTask(TCBptr task){
 	TCBptr temp = NULL;
+//	YKEnterMutex();
+//	printString("ReadyList: ");
 //	printList(YKRdyList);
 //	printString("suspend task (current list)\n");
+//	printString("Suspended List: ");
 //	printList(YKSuspList);
+	task = dequeue(&YKRdyList);
 	task->state = DELAYED;
-//	printString("task delay: ");
-//	printInt(task->delay);
-//	printString(" task prioirty: ");
+//	printString("task prioirty: ");
 //	printInt(task->priority);
+//	printString(" task delay: ");
+//	printInt(task->delay);
 //	printNewLine();
 //	printString("YKSuspList: ");
 //	printInt((int)YKSuspList);
@@ -298,16 +304,18 @@ void suspendTask(TCBptr task){
 //	printNewLine();
 	if(YKSuspList == NULL){
 //		printString("first suspended task\n");
-		YKSuspList = dequeue(&YKRdyList);
+		YKSuspList = task;//dequeue(&YKRdyList);
 //		printString("Ready: ");
 //		printList(YKRdyList);
 //		printString("Suspended: ");
 //		printList(YKSuspList);
 	}
-	else if(task->delay < YKSuspList->delay){
+	else if(task->delay <= YKSuspList->delay){
 //		printString("task to front of queue\n");
+		//task = dequeue(&YKRdyList);
 		task->next = YKSuspList;
 		task->prev = NULL;
+		YKSuspList->prev = task;
 		YKSuspList->delay -= task->delay;
                 YKSuspList = task;
 	} else { /* Needs fixin later*/
@@ -315,20 +323,32 @@ void suspendTask(TCBptr task){
 		//temp = YKSuspList->next;
 		temp = YKSuspList;
 		while(temp->next != NULL && temp->delay < task->delay){
+			//printString("decrement delay\n");
 			task->delay -= temp->delay;
 			temp = temp->next;
 		}
-		if(temp->delay < task->delay) {
+//		printString("temp priority: ");
+//		printInt(temp->priority);
+//		printString(" temp delay: ");
+//		printInt(temp->delay);
+//		printNewLine();
+//		printString("task delay: ");
+//		printInt(task->delay);
+//		printNewLine();
+		if(temp->delay < task->delay) {			/* end of the list */
 			task->delay -= temp->delay;
 			temp->next = task;
 			task->prev = temp;
-		} else {
+		} else {					/* insert into list */
+			temp->prev->next = task;
 			task->prev = temp->prev;
 			task->next = temp;
 			temp->prev = task;
 			temp->delay -= task->delay;
 		}
 	}
+	printString("Suspended List: ");
+	printList(YKSuspList);
 	// Only time this should be called is when the top priority task is delaying itself
 /*	if(YKRdyList != NULL && YKRdyList->priority == task->priority){
 		printString("Ready list: ");
@@ -340,6 +360,7 @@ void suspendTask(TCBptr task){
 		printInt(YKRdyList->priority);
 		printNewLine();
 	}*/
+//	YKExitMutex();
 }
 
 void saveStack(void* sp){

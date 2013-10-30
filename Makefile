@@ -3,6 +3,16 @@
 # Dayton Minor
 # 9/23/2013
 
+lab4d:
+	cpp -I ../ lab4d_app.c lab4d_app.i
+	cpp -I ../ cInt.c cInt.i
+	cpp -I ../ yakc.c yakc.i
+	c86 -g lab4d_app.i lab4d_app.s
+	c86 -g cInt.i cInt.s
+	c86 -g yakc.i yakc.s
+	cat clib.s asmInt.s cInt.s yakc.s yaks.s lab4d_app.s > lab4d_final.s
+	nasm lab4d_final.s -o lab4d.bin -l lab4d.lst
+
 lab4c:
 	cpp -I ../ lab4c_app.c lab4c_app.i
 	cpp -I ../ cInt.c cInt.i
