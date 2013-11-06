@@ -3,6 +3,16 @@
 # Dayton Minor
 # 9/23/2013
 
+lab5:
+	cpp -I ../ lab5app.c lab5_app.i
+	cpp -I ../ cInt.c cInt.i
+	cpp -I ../ yakc.c yakc.i
+	c86 -g lab5_app.i lab5_app.s
+	c86 -g cInt.i cInt.s
+	c86 -g yakc.i yakc.s
+	cat clib.s asmInt.s cInt.s yakc.s yaks.s lab5_app.s > lab5_final.s
+	nasm lab5_final.s -o lab5.bin -l lab5.lst
+
 lab4d:
 	cpp -I ../ lab4d_app.c lab4d_app.i
 	cpp -I ../ cInt.c cInt.i
@@ -36,5 +46,5 @@ lab4b:
 
 
 clean:
-	rm lab4*_app.i lab4*_app.s lab4*_final.s lab4*.bin lab4*.lst cInt.i cInt.s yakc.i yakc.s
+	rm lab*_app.i lab*_app.s lab*_final.s lab*.bin lab*.lst cInt.i cInt.s yakc.i yakc.s
 	

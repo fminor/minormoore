@@ -28,6 +28,11 @@ typedef struct taskblock { /* the TCB struct definition */
 	TCBptr prev;	/* backward ptr for dbl linked list */
 } TCB;
 
+typedef struct {
+	int ID;
+	int value;
+} YKSEM;
+
 extern TCBptr YKRdyList;		/* a list of TCBs of all ready tasks
 				   in order of decreasing priority */ 
 extern TCBptr YKSuspList;		/* tasks delayed or suspended */
@@ -49,6 +54,11 @@ void YKScheduler(int); /* Determines the highest priority ready task and gives t
 void YKDispatcher(TCBptr); /* Begins or resumes execution of the next task */
 void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 
+/* Semaphore functions */
+YKSEM* YKSemCreate(int);
+void YKSemPend(YKSEM*);
+void YKSemPost(YKSEM*);
+
 /* Custom Kernel Functions */
 void YKEnterMutex(); /* Disables interrupts */
 void YKExitMutex(); /* Enables interrupts */
@@ -60,6 +70,7 @@ TCBptr peak(TCBptr); /*Returns head of queue */
 void suspendTask(TCBptr); /* Puts onto delayed queue */
 void dispatchTask(void* ); 
 void YKSaveContext();
+
 
 /* Global Variables */
 

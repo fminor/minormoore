@@ -25,6 +25,9 @@ TCBptr YKSuspList;		/* tasks delayed or suspended */
 TCBptr YKAvailTCBList;		/* a list of available TCBs */
 TCB    YKTCBArray[MAXTASKS+1];	/* array to allocate all needed TCBs
 				   (extra one is for the idle task) */
+YKSEM SStack[MAXSEMAPHORES];
+TCBptr YKPendList[MAXSEMAPHORES];
+
 int IStk[ISTACKSIZE];
 /* Function declarations */
 
@@ -365,6 +368,48 @@ void suspendTask(TCBptr task){
 
 void saveStack(void* sp){
 	runningTask->sp = sp;
+}
+
+YKSEM* YKSemCreate(int initialValue){
+	static int index = 0;
+	//create sem at index
+	SStack[index].ID = index;
+	SStack[index].value = initialValue;
+	//return address and increment index
+	return &SStack[index++];
+}
+
+void YKSemPend(YKSEM* semaphore){
+	TCBptr task;
+	YKEnterMutex();
+	if(semaphore->value > 0){
+		semaphore->value--;
+		YKExitMutex();
+		return;
+	}
+	task = dequeue(&YKRdyList);
+	task->state = SUSPENDED;
+	YKPendList[semaphore->ID] = queue(YKPendList[semaphore->ID],task);
+	YKExitMutex();
+	YKScheduler(0);
+}
+
+void YKSemPost(YKSEM* semaphore){
+	TCBptr task;
+	YKEnterMutex();
+	if(semaphore->value++ > 0){
+		YKExitMutex();
+		return;
+	}
+	task = dequeue(&YKPendList[semaphore->ID]);
+	task->state = READY;
+	YKRdyList = queue(YKRdyList,task);
+	YKExitMutex();
+	//call scheduler if not ISR
+	if(YKISRDepth == 0){
+		YKScheduler(0);
+	}
+	
 }
 
 
