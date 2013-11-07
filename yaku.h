@@ -6,7 +6,7 @@
  *
  * */
 
-#define MAXTASKS 4 	/* count of user tasks*/
+#define MAXTASKS 5 	/* count of user tasks*/
 #define MAXSEMAPHORES 4 /* will be added later */
 #define MAXMESSAGEQUEUES 0 /* will be added later */
 

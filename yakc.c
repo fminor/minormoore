@@ -15,6 +15,8 @@ int YKIdleCount; /* Global variable used by idle task */
 int YKTickNum; /* Global variable incremented by tick handler */
 int YKISRDepth;
 
+int debug;
+
 int activeTasks;
 int started = 0;
 
@@ -77,8 +79,8 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 	// Need to write the assembly function	
 	//TCBptr new_task = dequeue(YKAvailTCBList);
 	TCBptr new_task = &YKTCBArray[activeTasks];
-	printString("YKNewTask: ");
-	printList(YKRdyList);
+//	printString("YKNewTask: ");
+//	printList(YKRdyList);
 	activeTasks++;
 	new_task->priority = priority;
 	new_task->state = READY;
@@ -159,11 +161,11 @@ void YKScheduler(int contextSaved) { /* Determines the highest priority ready ta
 	TCBptr next;	
 	if(!started)
 		return;
-	printString("Scheduler\n\r");
+//	printString("Scheduler\n\r");
 
 	next = peak(YKRdyList);
-	printString("Ready tasks: ");
-	printList(YKRdyList);
+//	printString("Ready tasks: ");
+//	printList(YKRdyList);
 //	printString("Next task priority: ");
 //	printInt(next->priority);
 //	printNewLine();
@@ -206,7 +208,7 @@ void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 	printNewLine();
 	//update tick info
 	YKTickNum++;
-	while(YKTickNum > 20);
+//	while(YKTickNum > 20);
 
 	//decrement top of YKSuspList->delay
 	if(YKSuspList != NULL) {
@@ -258,13 +260,20 @@ TCBptr queue(TCBptr queue_head, TCBptr task){
 		queue_head = task;
 	} else {
 		TCBptr temp = queue_head;
-		while(temp->next->priority < task->priority) {
+		while(temp->next != NULL && (temp->next->priority < task->priority)) {
 			temp = temp->next;
 		}
-		task->next = temp->next;
-		task->next->prev = task;
-		task->prev = temp;
-		temp->next = task;
+		if(temp->next==NULL){
+			task->prev = temp;
+			temp->next = task;
+		}
+		else
+		{
+			task->next = temp->next;
+			task->next->prev = task;
+			task->prev = temp;
+			temp->next = task;
+		}
 	}
 	return queue_head;
 }
@@ -373,8 +382,10 @@ void saveStack(void* sp){
 YKSEM* YKSemCreate(int initialValue){
 	static int index = 0;
 	//create sem at index
+	YKEnterMutex();
 	SStack[index].ID = index;
 	SStack[index].value = initialValue;
+	YKExitMutex();
 	//return address and increment index
 	return &SStack[index++];
 }
@@ -382,6 +393,10 @@ YKSEM* YKSemCreate(int initialValue){
 void YKSemPend(YKSEM* semaphore){
 	TCBptr task;
 	YKEnterMutex();
+//	printString("\nPend:\n");
+//	printString("ReadyList: ");
+//	printList(YKRdyList);
+
 	if(semaphore->value-- > 0){
 		YKExitMutex();
 		return;
@@ -389,6 +404,12 @@ void YKSemPend(YKSEM* semaphore){
 	task = dequeue(&YKRdyList);
 	task->state = SUSPENDED;
 	YKPendList[semaphore->ID] = queue(YKPendList[semaphore->ID],task);
+//	printString("Semaphore ");
+//	printInt(semaphore->ID);
+//	printString(" list: ");
+//	printList(YKPendList[semaphore->ID]);
+//	printString("ReadyList: ");
+//	printList(YKRdyList);
 	YKExitMutex();
 	YKScheduler(0);
 }
@@ -396,13 +417,39 @@ void YKSemPend(YKSEM* semaphore){
 void YKSemPost(YKSEM* semaphore){
 	TCBptr task;
 	YKEnterMutex();
-	if(semaphore->value++ > 0){
+//	printString("\nPost:\n");
+//	printString("\nSemaphore ");
+//	printInt(semaphore->ID);
+//	printString("\n");
+//	printString(" list: ");
+//	printList(YKPendList[semaphore->ID]);
+
+//	printString("Semval: ");
+//	printInt(semaphore->value);
+//	printString("\n");
+
+	if(semaphore->value++ >= 0){
+//		printString("Semval: ");
+//		printInt(semaphore->value);
+//		printString("\n");
 		YKExitMutex();
 		return;
 	}
+//	 else{
+//		printString("\nSemaphore ");
+//		printInt(semaphore->ID);
+//		printString(" list: ");
+//	}
 	task = dequeue(&YKPendList[semaphore->ID]);
 	task->state = READY;
 	YKRdyList = queue(YKRdyList,task);
+//	printString("Semaphore ");
+//	printInt(semaphore->ID);
+//	printString(" list: ");
+//	printList(YKPendList[semaphore->ID]);
+//	printString("ReadyList: ");
+//	printList(YKRdyList);
+
 	YKExitMutex();
 	//call scheduler if not ISR
 	if(YKISRDepth == 0){
