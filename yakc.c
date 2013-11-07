@@ -77,8 +77,8 @@ void YKNewTask(void (*task)(void), void*taskStack, unsigned char priority) { /* 
 	// Need to write the assembly function	
 	//TCBptr new_task = dequeue(YKAvailTCBList);
 	TCBptr new_task = &YKTCBArray[activeTasks];
-//	printList(YKRdyList);
-//	printString("newTask\n\r");
+	printString("YKNewTask: ");
+	printList(YKRdyList);
 	activeTasks++;
 	new_task->priority = priority;
 	new_task->state = READY;
@@ -159,11 +159,11 @@ void YKScheduler(int contextSaved) { /* Determines the highest priority ready ta
 	TCBptr next;	
 	if(!started)
 		return;
-//	printString("Scheduler\n\r");
+	printString("Scheduler\n\r");
 
 	next = peak(YKRdyList);
-//	printString("Ready tasks: ");
-//	printList(YKRdyList);
+	printString("Ready tasks: ");
+	printList(YKRdyList);
 //	printString("Next task priority: ");
 //	printInt(next->priority);
 //	printNewLine();
@@ -350,8 +350,8 @@ void suspendTask(TCBptr task){
 			temp->delay -= task->delay;
 		}
 	}
-	printString("Suspended List: ");
-	printList(YKSuspList);
+//	printString("Suspended List: ");
+//	printList(YKSuspList);
 	// Only time this should be called is when the top priority task is delaying itself
 /*	if(YKRdyList != NULL && YKRdyList->priority == task->priority){
 		printString("Ready list: ");
@@ -382,8 +382,7 @@ YKSEM* YKSemCreate(int initialValue){
 void YKSemPend(YKSEM* semaphore){
 	TCBptr task;
 	YKEnterMutex();
-	if(semaphore->value > 0){
-		semaphore->value--;
+	if(semaphore->value-- > 0){
 		YKExitMutex();
 		return;
 	}

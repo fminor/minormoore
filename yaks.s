@@ -97,6 +97,7 @@ YKSaveContext:
 ;	add sp, 20		;
 ;	push word[si]		;
 ;	sub sp, 18		;
+labelSave:
 				; Leave stack
 	push word[bp - 4]	; Push ret address
 	ret
@@ -114,6 +115,7 @@ dispatchTask:
 	pop ds			;
 	pop es			;
 	pop bp			;
+labelDispatch:
 	iret			; Return
 		 
 YKEnterMutex:
