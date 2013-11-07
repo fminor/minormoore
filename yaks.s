@@ -106,32 +106,36 @@ dispatchTask:
 	push bp			;
 	mov bp,sp		;
 	mov sp, word[bp+4]	;
+
 	pop ax			;
 	pop bx			;
 	pop cx			;
 	pop dx			;
+
 	pop si			;
 	pop di			;
 	pop ds			;
 	pop es			;
+
 	pop bp			;
+
 labelDispatch:
 	iret			; Return
 		 
 YKEnterMutex:
-;	push bp
-;	mov bp, sp
+	push bp
+	mov bp, sp
 	cli
-;	mov sp, bp
-;	pop bp
+	mov sp, bp
+	pop bp
 	ret
 
 YKExitMutex:
-;	push bp
-;	mov bp, sp
+	push bp
+	mov bp, sp
 	sti
-;	mov sp, bp
-;	pop bp
+	mov sp, bp
+	pop bp
 	ret
 	
 YKEnterISR:

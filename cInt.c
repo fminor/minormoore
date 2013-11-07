@@ -12,18 +12,19 @@ extern int YKTickNum;
 extern YKSEM *NSemPtr;
 void handleKeyboard(){
 	extern int KeyBuffer;
-	/*int i;
+	int i;
 	if(KeyBuffer == 'd'){
 		printNewLine();
 		printString("DELAY KEY PRESSED");
-		for (i = 0; i < 5000; i++){
-			// Do nothing
-		} 
+		i = 0;
+		while(i < 5000)
+			i++;	
 		printNewLine();
 		printString("DELAY COMPLETE");	
-	}*/
-	if(KeyBuffer == 'p'){
+	} else if(KeyBuffer == 'p'){
+		printString(" Posting NSemPtr, now: ");
 		YKSemPost(NSemPtr);	
+		printInt(NSemPtr->value);
 	}
 	else {
 		printNewLine();
@@ -32,5 +33,6 @@ void handleKeyboard(){
 		printString("' IGNORED");
 		printNewLine();
 	}
+	printNewLine();
 //
 }

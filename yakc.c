@@ -212,6 +212,7 @@ void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 
 	//decrement top of YKSuspList->delay
 	if(YKSuspList != NULL) {
+		YKEnterMutex();
 		YKSuspList->delay = YKSuspList->delay - 1;
 //		printString("Top delay: ");
 //		printInt(YKSuspList->delay);
@@ -230,6 +231,7 @@ void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 //		printString("Next ready task priority: ");
 //		printInt(YKRdyList->priority);
 //		printNewLine();
+		YKExitMutex();
 	}
 }
 
@@ -410,8 +412,8 @@ void YKSemPend(YKSEM* semaphore){
 //	printList(YKPendList[semaphore->ID]);
 //	printString("ReadyList: ");
 //	printList(YKRdyList);
-	YKExitMutex();
 	YKScheduler(0);
+	YKExitMutex();
 }
 
 void YKSemPost(YKSEM* semaphore){
@@ -450,11 +452,11 @@ void YKSemPost(YKSEM* semaphore){
 //	printString("ReadyList: ");
 //	printList(YKRdyList);
 
-	YKExitMutex();
 	//call scheduler if not ISR
 	if(YKISRDepth == 0){
 		YKScheduler(0);
 	}
+	YKExitMutex();
 	
 }
 
