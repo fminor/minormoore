@@ -79,7 +79,7 @@ initStack:
 YKSaveContext:
 	pushf 			; push flags
 	push cs 		; push cs 
-	push word[bp + 2]	; spot for ctx ret
+	push word[bp + 2]	; ctx ret
 	push word[bp]		; push old bp, this will clean up the stack when we return to the task
 
 	push es			; push es,ds,di,si,dx,cx,bx,ax
@@ -106,7 +106,7 @@ dispatchTask:
 	push bp			;
 	mov bp,sp		;
 	mov sp, word[bp+4]	;
-
+isrRestore:
 	pop ax			;
 	pop bx			;
 	pop cx			;
@@ -139,17 +139,37 @@ YKExitMutex:
 	ret
 	
 YKEnterISR:
+;	flags already pushed
+;	cs already pushed
+;	iret address
+;	push bp ; 16 (ret address is here)
+;	push es ; 14 
+	push ds ; 12
+	push di ; 10
+	push si ; 8
+	push dx ; 6
+	push cx ; 4
+	push bx ; 2
+	push ax ; 0
+	mov si, [runningTask]   ; Save stack pointer
+        mov [si], sp            ;
+	mov bp, sp		; 
+	push word[bp + 14]	; Return address to ISR
+	mov [bp + 14], es 	; Saves bp in right place
 	inc word[YKISRDepth]
 	ret
 
 YKExitISR:
+	mov al, 0x20	; Load nonspecific EOI value into register al
+	out 0x20, al	; Write EOI to PIC (port 0x20)
 	dec word[YKISRDepth]
 	cmp word[YKISRDepth], 0
 	je endISR
-	ret
+	jmp isrRestore
 endISR:
 	mov ax, 1
 	push ax
 	call YKScheduler
 	pop ax
-	ret
+	jmp isrRestore
+	
