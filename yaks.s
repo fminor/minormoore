@@ -143,7 +143,7 @@ YKEnterISR:
 ;	cs already pushed
 ;	iret address
 ;	push bp ; 16 (ret address is here)
-;	push es ; 14 
+	push es ; 14 
 	push ds ; 12
 	push di ; 10
 	push si ; 8
@@ -153,9 +153,10 @@ YKEnterISR:
 	push ax ; 0
 	mov si, [runningTask]   ; Save stack pointer
         mov [si], sp            ;
+	mov ax, bp
 	mov bp, sp		; 
-	push word[bp + 14]	; Return address to ISR
-	mov [bp + 14], es 	; Saves bp in right place
+	push word[bp + 16]	; Return address to ISR
+	mov [bp + 16], ax 	; Saves bp in right place
 	inc word[YKISRDepth]
 	ret
 
