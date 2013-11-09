@@ -106,21 +106,25 @@ dispatchTask:
 	push bp			;
 	mov bp,sp		;
 	mov sp, word[bp+4]	;
-isrRestore:
-	pop ax			;
-	pop bx			;
-	pop cx			;
-	pop dx			;
+ctxRestore:
+;	mov si, [runningTask];
+;	mov ax, sp		;
+;	add ax, 24		;
+;	mov [si], ax		;
+				; Change TCP Stack pointer
+	pop ax			; 2
+	pop bx			; 4
+	pop cx			; 6
+	pop dx			; 8
 
-	pop si			;
-	pop di			;
-	pop ds			;
-	pop es			;
+	pop si			; 10
+	pop di			; 12
+	pop ds			; 14
+	pop es			; 16
 
-	pop bp			;
-
+	pop bp			; 18
 labelDispatch:
-	iret			; Return
+	iret			; Return 20 22 24
 		 
 YKEnterMutex:
 	push bp
@@ -151,8 +155,11 @@ YKEnterISR:
 	push cx ; 4
 	push bx ; 2
 	push ax ; 0
+	cmp word[YKISRDepth],0
+	jne skpSaveSP		;
 	mov si, [runningTask]   ; Save stack pointer
         mov [si], sp            ;
+skpSaveSP:
 	mov ax, bp
 	mov bp, sp		; 
 	push word[bp + 16]	; Return address to ISR
@@ -167,10 +174,12 @@ YKExitISR:
 	cmp word[YKISRDepth], 0
 	je endISR
 	jmp isrRestore
+
 endISR:
 	mov ax, 1
 	push ax
 	call YKScheduler
 	pop ax
-	jmp isrRestore
-	
+
+isrRestore:
+	jmp ctxRestore	

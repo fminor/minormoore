@@ -12,6 +12,7 @@ extern int YKTickNum;
 extern YKSEM *NSemPtr;
 void handleKeyboard(){
 	extern int KeyBuffer;
+	extern int YKISRDepth;
 	int i;
 	if(KeyBuffer == 'd'){
 		printNewLine();
@@ -22,9 +23,12 @@ void handleKeyboard(){
 		printNewLine();
 		printString("DELAY COMPLETE");	
 	} else if(KeyBuffer == 'p'){
+		
 		printString(" Posting NSemPtr, now: ");
 		YKSemPost(NSemPtr);	
 		printInt(NSemPtr->value);
+		printString(" ISRDepth is: ");
+		printInt(YKISRDepth);
 	}
 	else {
 		printNewLine();

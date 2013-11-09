@@ -126,6 +126,7 @@ void YKRun() { /* Starts actual execution of user code */
 }
 
 void YKDelayTask(int count) { /* Delays a task for specified number of clock ticks*/
+	YKEnterMutex();
 	runningTask->delay=count;
 //	printString("Delayed Task: ");
 //	printInt(runningTask->priority);
@@ -141,6 +142,7 @@ void YKDelayTask(int count) { /* Delays a task for specified number of clock tic
 //	printInt(YKSuspList->delay);
 //	printNewLine();
 	YKScheduler(0);
+	YKExitMutex();
 }
 
 //void YKEnterMutex() { /* Disables interrupts */
@@ -161,28 +163,17 @@ void YKScheduler(int contextSaved) { /* Determines the highest priority ready ta
 	TCBptr next;	
 	if(!started)
 		return;
-//	printString("Scheduler\n\r");
-
 	next = peak(YKRdyList);
-//	printString("Ready tasks: ");
-//	printList(YKRdyList);
-//	printString("Next task priority: ");
-//	printInt(next->priority);
-//	printNewLine();
 	if(runningTask != NULL && runningTask->priority != next->priority){
-//		printString("Context Switch\n");
 		YKEnterMutex();
 		YKCtxSwCount++;
 		if(contextSaved ==  0) {
 			YKSaveContext();
 		}
-		YKExitMutex();
 		YKDispatcher(next);
 	} else if (runningTask == NULL){
-	//YKRdyList = queue(YKRdyList,runningTask);
 		YKDispatcher(next);
-}
-//	}
+	}
 }
 
 //2.5
@@ -303,6 +294,7 @@ void suspendTask(TCBptr task){
 //	printString("suspend task (current list)\n");
 //	printString("Suspended List: ");
 //	printList(YKSuspList);
+	temp = peak(YKRdyList);
 	task = dequeue(&YKRdyList);
 	task->state = DELAYED;
 //	printString("task prioirty: ");
