@@ -8,7 +8,7 @@
 
 #define MAXTASKS 5 	/* count of user tasks*/
 #define MAXSEMAPHORES 4 /* will be added later */
-#define MAXMESSAGEQUEUES 0 /* will be added later */
+#define MAXMESSAGEQUEUES 1 /* will be added later */
 
 #define ISTACKSIZE 512 /* idle task size */
 

@@ -3,7 +3,7 @@
 ResetISR:
 	call YKEnterISR
 	sti
-	call handleReset
+	call myreset
 	cli
 	jmp YKExitISR
 
@@ -12,6 +12,7 @@ TickISR:
 	call YKEnterISR
 	sti 
 	call YKTickHandler
+	call mytick
 	cli
 	jmp YKExitISR
 
@@ -19,6 +20,6 @@ TickISR:
 KeyboardISR:
 	call YKEnterISR
 	sti 
-	call handleKeyboard
+	call mykeybrd
 	cli
  	jmp YKExitISR

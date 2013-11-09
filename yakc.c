@@ -30,6 +30,8 @@ TCB    YKTCBArray[MAXTASKS+1];	/* array to allocate all needed TCBs
 YKSEM SStack[MAXSEMAPHORES];
 TCBptr YKPendList[MAXSEMAPHORES];
 
+YKQ QStack[MAXMESSAGEQUEUES];
+
 int IStk[ISTACKSIZE];
 /* Function declarations */
 
@@ -193,13 +195,13 @@ void YKDispatcher(TCBptr next) { /* Begins or resumes execution of the next task
 
 void YKTickHandler() { /* The kernel's timer tick interrupt handler */
 	//print Tick information
-	printNewLine();
+/*	printNewLine();
 	printString("Tick ");
 	printInt(YKTickNum);
-	printNewLine();
+	printNewLine(); */
 	//update tick info
 	YKTickNum++;
-//	while(YKTickNum > 20);
+	while(YKTickNum > 20);
 
 	//decrement top of YKSuspList->delay
 	if(YKSuspList != NULL) {
@@ -422,7 +424,7 @@ void YKSemPost(YKSEM* semaphore){
 //	printInt(semaphore->value);
 //	printString("\n");
 
-	if(semaphore->value++ >= 0){
+	if(semaphore->value++ >= 0){extern TCB    YKTCBArray[MAXTASKS+1];
 //		printString("Semval: ");
 //		printInt(semaphore->value);
 //		printString("\n");
@@ -453,5 +455,57 @@ void YKSemPost(YKSEM* semaphore){
 }
 
 
-	
+YKQ* YKQCreate(void **start, unsigned size){
+	static int index = 0;
+	YKQ *queue;
+	if(index == MAXMESSAGEQUEUES)
+		printString("IDIOTS: update max message queues\n");
+	//find next entry in QStack
+	queue = &QStack[index++];
+	//initialize variables
+	queue->queue = start;
+	queue->head = -1;
+	queue->tail = 0;
+	queue->length = size;
+	return queue;
+}
+
+void* YKQPend(YKQ *queue){
+	void* msg;
+	//check if head == tail
+	if(queue->head == -1)
+		return NULL;
+	msg = queue->queue[queue->head++];
+	//update head(increment)
+	if(queue->head == queue->length)
+		queue->head = 0;
+	if(queue->head == queue->tail) // empty
+		queue->head = -1;
+	return msg;
+}
+
+int YKQPost(YKQ *queue, void *msg){
+	//check if head == index
+	if(queue->head == queue->tail){ // full
+		printString("full queue\n");
+		printString("head: ");
+		printInt(queue->head);
+		printString(" tail: ");
+		printInt(queue->tail);
+		printNewLine();
+		return 0;
+	}else{ //not full
+
+	//put in msg array
+	//update tail
+		if(queue->head == -1) // empty
+			queue->head = queue->tail;
+		queue->queue[queue->tail++] = msg;
+		if(queue->tail == queue->length)
+			queue->tail = 0;
+		return 1;
+	}
+
+}
+
 	

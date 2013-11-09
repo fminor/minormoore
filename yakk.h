@@ -33,6 +33,19 @@ typedef struct {
 	int value;
 } YKSEM;
 
+typedef struct queueNode * QMSGptr;
+//typedef struct queueNode {
+//	void* msg;
+//	QMSGptr next;
+//} QMSG;
+typedef struct queueblock {
+	void** queue;
+	int head;
+	int tail;
+	//int count;
+	unsigned length;
+} YKQ;
+
 extern TCBptr YKRdyList;		/* a list of TCBs of all ready tasks
 				   in order of decreasing priority */ 
 extern TCBptr YKSuspList;		/* tasks delayed or suspended */
@@ -58,6 +71,10 @@ void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 YKSEM* YKSemCreate(int);
 void YKSemPend(YKSEM*);
 void YKSemPost(YKSEM*);
+/* Queue functions */
+YKQ *YKQCreate(void **start, unsigned size);
+void *YKQPend(YKQ *queue);
+int YKQPost(YKQ *queue, void *msg);
 
 /* Custom Kernel Functions */
 void YKEnterMutex(); /* Disables interrupts */
@@ -77,5 +94,6 @@ void YKSaveContext();
 extern int YKCtxSwCount; /* Global variable tracking context switches */
 extern int YKIdleCount; /* Global variable used by idle task */
 extern int YKTickNum; /* Global variable incremented by tick handler */
+
 
 

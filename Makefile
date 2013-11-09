@@ -2,6 +2,17 @@
 # Lab 3 ECEn 425 Makefile
 # Dayton Minor
 # 9/23/2013
+lab6:
+	cpp -I ../ lab6app.c lab6_app.i
+	cpp -I ../ cInt.c cInt.i
+	cpp -I ../ yakc.c yakc.i
+	cpp -I ../ lab6inth.c lab6inth.i
+	c86 -g lab6_app.i lab6_app.s
+	c86 -g lab6inth.i lab6inth.s
+	c86 -g cInt.i cInt.s
+	c86 -g yakc.i yakc.s
+	cat clib.s asmInt.s cInt.s yakc.s yaks.s lab6_app.s lab6inth.s > lab6_final.s
+	nasm lab6_final.s -o lab6.bin -l lab6.lst
 
 lab5:
 	cpp -I ../ lab5app.c lab5_app.i

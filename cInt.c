@@ -22,14 +22,15 @@ void handleKeyboard(){
 			i++;	
 		printNewLine();
 		printString("DELAY COMPLETE");	
-	} else if(KeyBuffer == 'p'){
+	} 
+	/*else if(KeyBuffer == 'p'){
 		
 		printString(" Posting NSemPtr, now: ");
 		YKSemPost(NSemPtr);	
 		printInt(NSemPtr->value);
 		printString(" ISRDepth is: ");
 		printInt(YKISRDepth);
-	}
+	}*/
 	else {
 		printNewLine();
 		printString("KEYPRESS '");
