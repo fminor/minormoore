@@ -42,8 +42,8 @@ typedef struct queueblock {
 	void** queue;
 	int head;
 	int tail;
-	//int count;
 	unsigned length;
+	YKSEM* sem;
 } YKQ;
 
 extern TCBptr YKRdyList;		/* a list of TCBs of all ready tasks

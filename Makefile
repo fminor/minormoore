@@ -57,5 +57,5 @@ lab4b:
 
 
 clean:
-	rm lab*_app.i lab*_app.s lab*_final.s lab*.bin lab*.lst cInt.i cInt.s yakc.i yakc.s
+	rm lab*_app.i lab*_app.s lab*_final.s lab*.bin lab*.lst cInt.i cInt.s yakc.i yakc.s lab*inth.s lab*inth.i
 	
