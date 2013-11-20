@@ -2,6 +2,15 @@
 # Lab 3 ECEn 425 Makefile
 # Dayton Minor
 # 9/23/2013
+lab7:
+	cpp -I ../ lab7app.c lab7_app.i
+	cpp -I ../ cInt.c cInt.i
+	cpp -I ../ yakc.c yakc.i
+	c86 -g lab7_app.i lab7_app.s
+	c86 -g cInt.i cInt.s
+	c86 -g yakc.i yakc.s
+	cat clib.s asmInt.s cInt.s yakc.s yaks.s lab7_app.s > lab7_final.s
+	nasm lab7_final.s -o lab7.bin -l lab7.lst
 lab6:
 	cpp -I ../ lab6app.c lab6_app.i
 	cpp -I ../ cInt.c cInt.i
@@ -57,5 +66,5 @@ lab4b:
 
 
 clean:
-	rm lab*_app.i lab*_app.s lab*_final.s lab*.bin lab*.lst cInt.i cInt.s yakc.i yakc.s lab*inth.s lab*inth.i
+	rm  lab*.bin lab*.lst cInt.i cInt.s yakc.i yakc.s lab*.s lab*.i
 	

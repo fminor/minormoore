@@ -27,14 +27,16 @@ TCBptr YKSuspList;		/* tasks delayed or suspended */
 TCBptr YKAvailTCBList;		/* a list of available TCBs */
 TCB    YKTCBArray[MAXTASKS+1];	/* array to allocate all needed TCBs
 				   (extra one is for the idle task) */
-YKSEM SStack[MAXSEMAPHORES + MAXMESSAGEQUEUES];
-TCBptr YKPendList[MAXSEMAPHORES + MAXMESSAGEQUEUES];
+YKSEM SStack[MAXSEMAPHORES + MAXMESSAGEQUEUES + MAXEVENTS]; /* Semaphores */
+TCBptr YKPendList[MAXSEMAPHORES + MAXMESSAGEQUEUES + MAXEVENTS]; /* One needed for each semaphore */ 
 
-YKQ QStack[MAXMESSAGEQUEUES];
+YKQ QStack[MAXMESSAGEQUEUES]; /* Queues */
+
+YKEVENT EStack[MAXEVENTS]; /* Events */ 
 
 int IStk[ISTACKSIZE];
-/* Function declarations */
 
+/* Function declarations */
 void printList(TCBptr list) {
 	TCBptr tcb = list;
 	int safety = 0;
@@ -359,17 +361,8 @@ int YKQPost(YKQ *queue, void *msg){
 	//check if head == index
 	YKSemPost(queue->sem);
 	if(queue->head == queue->tail){ // full
-//		printString("full queue\n");
-//		printString("head: ");
-//		printInt(queue->head);
-//		printString(" tail: ");
-//		printInt(queue->tail);
-//		printNewLine();
 		return 0;
 	}else{ //not full
-
-	//put in msg array
-	//update tail
 		if(queue->head == -1) // empty
 			queue->head = queue->tail;
 		queue->queue[queue->tail++] = msg;
@@ -380,4 +373,43 @@ int YKQPost(YKQ *queue, void *msg){
 
 }
 
-	
+YKEVENT* YKEventCreate(unsigned init){
+	static int index = 0;
+	YKEVENT* e = &EStack[index];
+	e->flags = init;
+	e->sem = YKSemCreate(0);
+	return e;	
+}
+
+unsigned YKEventPend(YKEVENT* e, unsigned mask, int mode){
+	unsigned test;
+	if(mode == EVENT_WAIT_ANY){
+		test = mask & e->flags;
+		while(!test) {
+			printString("Test: ");
+			printWord(test);
+			printNewLine();
+			YKSemPend(e->sem); /* Block */
+			test = mask & e->flags; /* test again */
+		}
+	} else if (mode == EVENT_WAIT_ALL) {
+		test = mask & e->flags;
+		while(test != mask) {
+			YKSemPend(e->sem);
+			test = mask & e->flags;
+		}
+	} else {
+		printString("Invalid event wait mode!!!!!! ERROR!!! ARGHHHH!!!! FIRE!!!! INVALID USER!!!!\n");
+		return NULL;
+	}
+	return e->flags;
+}
+
+void YKEventSet(YKEVENT* e, unsigned mask){
+	e->flags |= mask; /* Set bits from mask to one (leave others unchanged) */
+	YKSemPost(e->sem);
+}
+
+void YKEventReset(YKEVENT* e, unsigned mask){
+	e->flags = e->flags & !mask; /* Set the bits from mask to zero in flags */	
+}

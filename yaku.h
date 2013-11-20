@@ -7,9 +7,9 @@
  * */
 
 #define MAXTASKS 5 	/* count of user tasks*/
-#define MAXSEMAPHORES 4 /* will be added later */
-#define MAXMESSAGEQUEUES 1 /* will be added later */
-
+#define MAXSEMAPHORES 0 /* semaphores */
+#define MAXMESSAGEQUEUES 1 /* messagequeue: if not in use leave at one */
+#define MAXEVENTS 2 /* number of events: if not in use leave at one*/
 #define ISTACKSIZE 512 /* idle task size */
 
 

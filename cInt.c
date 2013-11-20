@@ -1,5 +1,6 @@
 #include "clib.h"
 #include "yakk.h"
+#include "lab7defs.h"
 
 void handleReset(){
 	exit(0);
@@ -8,28 +9,21 @@ void handleReset(){
 // Global variable n for tick
 extern int YKTickNum;
 
-
-extern YKSEM *NSemPtr;
 void handleKeyboard(){
+	char c;
 	extern int KeyBuffer;
-	extern int YKISRDepth;
-	int i;
-	if(KeyBuffer == 'd'){
-		printNewLine();
-		printString("DELAY KEY PRESSED");
-		i = 0;
-		while(i < 5000)
-			i++;	
-		printNewLine();
-		printString("DELAY COMPLETE");	
-	} 
-	else {
-		printNewLine();
-		printString("KEYPRESS '");
-		printChar(KeyBuffer);
-		printString("' IGNORED");
-		printNewLine();
-	}
-	printNewLine();
-//
+   	c = KeyBuffer;
+
+    	if(c == 'a') YKEventSet(charEvent, EVENT_A_KEY);
+    	else if(c == 'b') YKEventSet(charEvent, EVENT_B_KEY);
+    	else if(c == 'c') YKEventSet(charEvent, EVENT_C_KEY);
+   	else if(c == 'd') YKEventSet(charEvent, EVENT_A_KEY | EVENT_B_KEY | EVENT_C_KEY);
+    	else if(c == '1') YKEventSet(numEvent, EVENT_1_KEY);
+    	else if(c == '2') YKEventSet(numEvent, EVENT_2_KEY);
+    	else if(c == '3') YKEventSet(numEvent, EVENT_3_KEY);
+    	else {
+    	    print("\nKEYPRESS (", 11);
+    	    printChar(c);
+    	    print(") IGNORED\n", 10);
+    	}
 }

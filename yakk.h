@@ -16,6 +16,9 @@
 #define DELAYED 2
 #define SUSPENDED 3
 
+/* Define Event Wait Modes */
+#define EVENT_WAIT_ALL 0
+#define EVENT_WAIT_ANY 1
 
 typedef struct taskblock *TCBptr;
 typedef struct taskblock { /* the TCB struct definition */
@@ -34,10 +37,6 @@ typedef struct {
 } YKSEM;
 
 typedef struct queueNode * QMSGptr;
-//typedef struct queueNode {
-//	void* msg;
-//	QMSGptr next;
-//} QMSG;
 typedef struct queueblock {
 	void** queue;
 	int head;
@@ -46,14 +45,17 @@ typedef struct queueblock {
 	YKSEM* sem;
 } YKQ;
 
+typedef struct {
+	unsigned flags;
+	YKSEM* sem;
+} YKEVENT;
+
 extern TCBptr YKRdyList;		/* a list of TCBs of all ready tasks
 				   in order of decreasing priority */ 
 extern TCBptr YKSuspList;		/* tasks delayed or suspended */
 extern TCBptr YKAvailTCBList;		/* a list of available TCBs */
 extern TCB    YKTCBArray[MAXTASKS+1];	/* array to allocate all needed TCBs
 				   (extra one is for the idle task) */
-
-/* List code here */
 
 /* Function declarations */
 
@@ -71,10 +73,17 @@ void YKTickHandler(); /* The kernel's timer tick interrupt handler */
 YKSEM* YKSemCreate(int);
 void YKSemPend(YKSEM*);
 void YKSemPost(YKSEM*);
+
 /* Queue functions */
 YKQ *YKQCreate(void **start, unsigned size);
 void *YKQPend(YKQ *queue);
 int YKQPost(YKQ *queue, void *msg);
+
+/* Event functions */
+YKEVENT* YKEventCreate(unsigned);
+unsigned YKEventPend(YKEVENT*, unsigned, int);
+void YKEventSet(YKEVENT*, unsigned);
+void YKEventReset(YKEVENT*, unsigned);
 
 /* Custom Kernel Functions */
 void YKEnterMutex(); /* Disables interrupts */
