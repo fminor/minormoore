@@ -112,8 +112,8 @@ void YKDelayTask(int count) { /* Delays a task for specified number of clock tic
 
 	suspendTask(runningTask);
 
-	YKScheduler(0);
 	YKExitMutex();
+	YKScheduler(0);
 }
 
 //void YKEnterMutex() { /* Disables interrupts */
