@@ -375,39 +375,90 @@ int YKQPost(YKQ *queue, void *msg){
 
 YKEVENT* YKEventCreate(unsigned init){
 	static int index = 0;
-	YKEVENT* e = &EStack[index];
+	YKEVENT* e = &EStack[index++];
 	e->flags = init;
 	e->sem = YKSemCreate(0);
+	e->tasks = NULL;
 	return e;	
+}
+void eventBlock(YKEVENT* e){
+	TCBptr task, list;
+	task = dequeue(&YKRdyList);
+	task->state = SUSPENDED;
+	list = e->tasks;
+	if(list == NULL)
+		e->tasks = task;
+	else{
+		task->next = list;
+		e->tasks = task;
+	}
+	YKScheduler(0);
 }
 
 unsigned YKEventPend(YKEVENT* e, unsigned mask, int mode){
 	unsigned test;
+	YKEnterMutex();
+//	printString("mode: ");
+//	printInt(mode);
+//	printNewLine();
+//	printString("WAIT_ANY: ");
+//	printInt(EVENT_WAIT_ANY);
+//	printNewLine();
+//	printString("WAIT_ALL: ");
+//	printInt(EVENT_WAIT_ALL);
+//	printNewLine();
 	if(mode == EVENT_WAIT_ANY){
 		test = mask & e->flags;
 		while(!test) {
-			printString("Test: ");
-			printWord(test);
-			printNewLine();
-			YKSemPend(e->sem); /* Block */
+//			printString("Test: ");
+//			printWord(test);
+//			printNewLine();
+			YKExitMutex();
+			eventBlock(e);
+			//YKSemPend(e->sem); /* Block */
 			test = mask & e->flags; /* test again */
 		}
+		printString("success on the any\n");
 	} else if (mode == EVENT_WAIT_ALL) {
 		test = mask & e->flags;
 		while(test != mask) {
-			YKSemPend(e->sem);
+			YKExitMutex();
+			eventBlock(e);
+			//YKSemPend(e->sem);
 			test = mask & e->flags;
 		}
 	} else {
 		printString("Invalid event wait mode!!!!!! ERROR!!! ARGHHHH!!!! FIRE!!!! INVALID USER!!!!\n");
 		return NULL;
 	}
+	YKExitMutex();
 	return e->flags;
 }
 
 void YKEventSet(YKEVENT* e, unsigned mask){
+	TCBptr head;
+	TCBptr temp;
+	int schedule;
+	YKEnterMutex();
+//	printString("Event fired\n");
 	e->flags |= mask; /* Set bits from mask to one (leave others unchanged) */
-	YKSemPost(e->sem);
+	//YKSemPost(e->sem);
+	head = e->tasks;
+	/* unblock all tasks associated with this event*/
+	schedule = 0;
+	while( head != NULL){
+		temp = head;
+		head = head->next;
+		e->tasks = head;
+		temp->next = NULL;
+		YKRdyList = queue(YKRdyList,temp);
+		printString("while loop of the event set method\n");
+		schedule = 1;
+	}
+	YKExitMutex();
+	if(schedule)
+		YKScheduler(0);
+
 }
 
 void YKEventReset(YKEVENT* e, unsigned mask){

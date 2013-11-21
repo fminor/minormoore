@@ -48,6 +48,7 @@ typedef struct queueblock {
 typedef struct {
 	unsigned flags;
 	YKSEM* sem;
+	TCBptr tasks;
 } YKEVENT;
 
 extern TCBptr YKRdyList;		/* a list of TCBs of all ready tasks
