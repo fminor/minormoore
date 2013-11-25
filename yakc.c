@@ -27,7 +27,7 @@ TCBptr YKSuspList;		/* tasks delayed or suspended */
 TCBptr YKAvailTCBList;		/* a list of available TCBs */
 TCB    YKTCBArray[MAXTASKS+1];	/* array to allocate all needed TCBs
 				   (extra one is for the idle task) */
-YKSEM SStack[MAXSEMAPHORES + MAXMESSAGEQUEUES + MAXEVENTS]; /* Semaphores */
+YKSEM SStack[MAXSEMAPHORES + MAXMESSAGEQUEUES]; /* Semaphores */
 TCBptr YKPendList[MAXSEMAPHORES + MAXMESSAGEQUEUES + MAXEVENTS]; /* One needed for each semaphore */ 
 
 YKQ QStack[MAXMESSAGEQUEUES]; /* Queues */
@@ -377,7 +377,7 @@ YKEVENT* YKEventCreate(unsigned init){
 	static int index = 0;
 	YKEVENT* e = &EStack[index++];
 	e->flags = init;
-	e->sem = YKSemCreate(0);
+	e->sFlags = NULL;
 	e->tasks = NULL;
 	return e;	
 }
@@ -398,37 +398,22 @@ void eventBlock(YKEVENT* e){
 unsigned YKEventPend(YKEVENT* e, unsigned mask, int mode){
 	unsigned test;
 	YKEnterMutex();
-//	printString("mode: ");
-//	printInt(mode);
-//	printNewLine();
-//	printString("WAIT_ANY: ");
-//	printInt(EVENT_WAIT_ANY);
-//	printNewLine();
-//	printString("WAIT_ALL: ");
-//	printInt(EVENT_WAIT_ALL);
-//	printNewLine();
 	if(mode == EVENT_WAIT_ANY){
 		test = mask & e->flags;
 		while(!test) {
-//			printString("Test: ");
-//			printWord(test);
-//			printNewLine();
 			YKExitMutex();
-			eventBlock(e);
-			//YKSemPend(e->sem); /* Block */
-			test = mask & e->flags; /* test again */
+			eventBlock(e); /* Block */
+			test = mask & e->sFlags; /* test again */
 		}
-		printString("success on the any\n");
 	} else if (mode == EVENT_WAIT_ALL) {
 		test = mask & e->flags;
 		while(test != mask) {
 			YKExitMutex();
 			eventBlock(e);
-			//YKSemPend(e->sem);
-			test = mask & e->flags;
+			test = mask & e->sFlags;
 		}
 	} else {
-		printString("Invalid event wait mode!!!!!! ERROR!!! ARGHHHH!!!! FIRE!!!! INVALID USER!!!!\n");
+		printString("Invalid event wait mode!\n");
 		return NULL;
 	}
 	YKExitMutex();
@@ -440,10 +425,9 @@ void YKEventSet(YKEVENT* e, unsigned mask){
 	TCBptr temp;
 	int schedule;
 	YKEnterMutex();
-//	printString("Event fired\n");
 	e->flags |= mask; /* Set bits from mask to one (leave others unchanged) */
-	//YKSemPost(e->sem);
 	head = e->tasks;
+	e->sFlags = e->flags; /* Save flags that caused this pend */
 	/* unblock all tasks associated with this event*/
 	schedule = 0;
 	while( head != NULL){
@@ -452,7 +436,6 @@ void YKEventSet(YKEVENT* e, unsigned mask){
 		e->tasks = head;
 		temp->next = NULL;
 		YKRdyList = queue(YKRdyList,temp);
-		printString("while loop of the event set method\n");
 		schedule = 1;
 	}
 	YKExitMutex();

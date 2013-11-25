@@ -1,7 +1,19 @@
 ###########################################################
-# Lab 3 ECEn 425 Makefile
+# YAKK ECEn 425 Makefile
 # Dayton Minor
-# 9/23/2013
+# Jared Moore
+# 11/25/2013 
+lab8:
+	cpp -I ../ lab8app.c lab8_app.i
+	cpp -I ../ cInt.c cInt.i
+	cpp -I ../ yakc.c yakc.i
+	c86 -g lab8_app.i lab8_app.s
+	c86 -g cInt.i cInt.s
+	c86 -g yakc.i yakc.s
+	cat clib.s asmInt.s cInt.s yakc.s yaks.s simptris.s lab8_app.s> lab8_final.s
+	nasm lab8_final.s -o lab8.bin -l lab8.lst
+	cp lab8.bin simptris.bin
+	cp lab8.lst simptris.lst
 lab7:
 	cpp -I ../ lab7app.c lab7_app.i
 	cpp -I ../ cInt.c cInt.i
@@ -66,5 +78,5 @@ lab4b:
 
 
 clean:
-	rm  lab*.bin lab*.lst cInt.i cInt.s yakc.i yakc.s lab*.s lab*.i
+	rm  *.bin *.lst cInt.i cInt.s yakc.i yakc.s lab*.s lab*.i
 	

@@ -47,7 +47,7 @@ typedef struct queueblock {
 
 typedef struct {
 	unsigned flags;
-	YKSEM* sem;
+	unsigned sFlags; /* saved flags for when wait_all tasks are unblocked */
 	TCBptr tasks;
 } YKEVENT;
 
