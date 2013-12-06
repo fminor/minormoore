@@ -4,13 +4,15 @@
 # Jared Moore
 # 11/25/2013 
 lab8:
-	cpp -I ../ lab8app.c lab8_app.i
-	cpp -I ../ cInt.c cInt.i
-	cpp -I ../ yakc.c yakc.i
+	cpp lab8app.c lab8_app.i
+	cpp cInt.c cInt.i
+	cpp yakc.c yakc.i
+	cpp lab8inth.c lab8inth.i
 	c86 -g lab8_app.i lab8_app.s
+	c86 -g lab8inth.i lab8inth.s
 	c86 -g cInt.i cInt.s
 	c86 -g yakc.i yakc.s
-	cat clib.s asmInt.s cInt.s yakc.s yaks.s simptris.s lab8_app.s> lab8_final.s
+	cat clib.s asmInt.s cInt.s yakc.s yaks.s simptris.s lab8_app.s lab8inth.s> lab8_final.s
 	nasm lab8_final.s -o lab8.bin -l lab8.lst
 	cp lab8.bin simptris.bin
 	cp lab8.lst simptris.lst
