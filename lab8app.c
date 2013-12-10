@@ -80,21 +80,20 @@ void ATask(void){ /* Communicates with simptris */
 		}
 	}	
 }
-
+int spaces = 0;
+int space_dir = LEFT;
 void BTask(void){ /* New Piece */
 	np* piece;
 	int i, col, id, dest, dir;
 	static int next = 0;
 	static int next_corner = 0;
-	static int space_dir = LEFT;
 	static int corner_dir = RIGHT;
 	static int corners = 0;
-	static int spaces = 0;
-	static int flag = 1;
-	if(flag) {
-		postCommand(SLIDE,5,RIGHT);
-		flag = 0;
-	}
+	//static int flag = 1;
+	//if(flag) {
+	//	postCommand(SLIDE,5,RIGHT);
+	//	flag = 0;
+	//}
 	while(1){
 		/* Removes pieces from piece queue */
 		piece = (np *) YKQPend(NPQPtr);
@@ -102,6 +101,14 @@ void BTask(void){ /* New Piece */
 		col = piece->col;
 		id = piece->id;
 		if(piece->type == STRAIGHT){
+			YKEnterMutex();
+			YKExitMutex();
+			if(spaces > MAXSPACES)
+				space_dir = RIGHT;
+			else{
+				spaces++;
+				space_dir = LEFT;
+			}
 			if(col == 5){ /* move the space one left then rotated */
 				postCommand(SLIDE, id, LEFT);
 				col--;
@@ -115,13 +122,13 @@ void BTask(void){ /* New Piece */
 			}
 			/* move the piece to it's position */
 			if(space_dir == RIGHT){
-				dest = 5; // Should be 4
+				dest = 4; // Should be 4
 				while(col < dest){
 					col++;
 					postCommand(SLIDE,id,RIGHT);
 				}
 			}else{ /* move space to the left section */
-				dest = 0; // Should be 1
+				dest = 1; // Should be 1
 				while(col > dest){
 				//	printString("slide left");
 					col--;
@@ -168,7 +175,7 @@ void BTask(void){ /* New Piece */
 				 */
 				switch(piece->rot){
 					case 0: // Go from 0 to 3, or slide first then rotate
-						if(next_corner){ // Slide right first
+						if(!next_corner){ // Slide right first
 							postCommand(SLIDE,id,RIGHT);
 							col++;
 						}
@@ -178,6 +185,8 @@ void BTask(void){ /* New Piece */
 					case 3: // Rotate twice if needed
 						if(!next_corner){
 							postCommand(ROTATE,id,LEFT);
+							postCommand(SLIDE,id,RIGHT);
+							col++;
 							postCommand(ROTATE,id,LEFT);
 						}
 						break;
@@ -191,11 +200,13 @@ void BTask(void){ /* New Piece */
 					case 1: // Rotate twice to get 3 if needed
 					        if(next_corner) {
 							postCommand(ROTATE,id,LEFT);
+							postCommand(SLIDE,id,LEFT);
+							col--;
 							postCommand(ROTATE,id,LEFT);	
 					        }
 					        break;
 					case 2: // Go from 2 to 1, or rotate first
-						if(!next_corner){
+						if(next_corner){
 							postCommand(SLIDE,id,LEFT);
 							col--;
 						}
@@ -205,14 +216,24 @@ void BTask(void){ /* New Piece */
 				}
 			}
 			/* Sliding */
-			if (corner_dir = RIGHT){
-				dest = next_corner==0?6:4;
-				while(col < dest) {
-					postCommand(SLIDE,id,RIGHT);
-					col++;
-				}
+			if (corner_dir == RIGHT){
+				dest = next_corner==0?5:3;
+			//	if(col == 3 && next_corner == 1){
+
+				//}else {
+				//if(dest == 4 && col >= 4){
+					while(col > dest){
+						postCommand(SLIDE,id,LEFT);
+						col--;
+					}
+				//} else{
+					while(col < dest) {
+						postCommand(SLIDE,id,RIGHT);
+						col++;
+					}
+				//}
 			} else {
-				dest = next_corner==0?0:3;
+				dest = next_corner==0?0:2;
 				while(col > dest) {
 					postCommand(SLIDE,id,LEFT);
 					col--;

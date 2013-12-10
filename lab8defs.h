@@ -5,7 +5,7 @@
 
 #define CORNER 		0
 #define STRAIGHT	1
-
+#define MAXSPACES	4
 typedef struct np_ {
 	int id;
 	int type; /* Corner or Straight */

@@ -48,7 +48,7 @@ void handleRC(){ /* Received Command */
 	/* Releases semaphore */
 	YKSemPost(RCSem);
 }
-
+extern int spaces;
 void handleTD(){ /* Touchdown */
 	extern int TouchdownID;
 	extern int ScreenBitMap0;
@@ -75,6 +75,10 @@ void handleTD(){ /* Touchdown */
 void handleLC(){ /* Line Clear */
 	/* Puts information on StatQ */
 	StatArray[nextStat].type = CLEAR;
+	if(spaces > MAXSPACES)
+		spaces--;
+	else
+		spaces-=2;
 	/* Puts information on StatQ */
 	if(YKQPost(StatQPtr, (void *) &(StatArray[nextStat])) == 0)
 		printString("  LineClearISR: queue overflow ! \n");

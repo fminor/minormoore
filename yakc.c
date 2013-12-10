@@ -346,8 +346,10 @@ void* YKQPend(YKQ *queue){
 	void* msg;
 	//check if head == tail
 	YKSemPend(queue->sem);
-	if(queue->head == -1)
+	if(queue->head == -1){
+		printString("null value returned");
 		return NULL;
+	}
 	msg = queue->queue[queue->head++];
 	//update head(increment)
 	if(queue->head == queue->length)
@@ -359,8 +361,8 @@ void* YKQPend(YKQ *queue){
 
 int YKQPost(YKQ *queue, void *msg){
 	//check if head == index
-	YKSemPost(queue->sem);
 	if(queue->head == queue->tail){ // full
+		//YKSemPost(queue->sem);
 		return 0;
 	}else{ //not full
 		if(queue->head == -1) // empty
@@ -368,6 +370,7 @@ int YKQPost(YKQ *queue, void *msg){
 		queue->queue[queue->tail++] = msg;
 		if(queue->tail == queue->length)
 			queue->tail = 0;
+		YKSemPost(queue->sem);
 		return 1;
 	}
 
