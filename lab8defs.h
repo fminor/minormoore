@@ -2,6 +2,7 @@
 #define NPARRAYSIZE 20
 #define CMDARRAYSIZE 20
 #define STATARRAYSIZE 20
+#define FINDSIZE	16
 
 #define CORNER 		0
 #define STRAIGHT	1
@@ -21,11 +22,12 @@ struct np {
 
 #define CLK		1
 #define CNTRCLK		0
-
+struct cmd* cmdPtr;
 struct cmd {
 	int cmd; /* Slide or Rotate */
 	int id; /* ID of piece */
 	int dir;
+	cmdPtr next;
 };
 
 #define CLEAR		0
@@ -78,8 +80,11 @@ struct stat {
 
 struct space_t {
 	int state; 	/* State of the space */
+	int row; 	/* Row of space */
 	int col;	/* Location of space */
+	int rot;	/* Same as in new piece */
 	int cost;	/* Cost of space */
+	cmdPtr commands;
 	int priority;	/* Priority */
 };			/* Could include a linked list of cmd */
 
