@@ -1,4 +1,3 @@
-
 #define NPARRAYSIZE 20
 #define CMDARRAYSIZE 20
 #define STATARRAYSIZE 20
@@ -7,12 +6,12 @@
 #define CORNER 		0
 #define STRAIGHT	1
 
-struct np {
+typedef struct np_ {
 	int id;
 	int type; /* Corner or Straight */
 	int rot; /* Orientation */
 	int col; /* Center block of piece */
-};
+} np;
 
 #define SLIDE		0
 #define ROTATE		1
@@ -22,18 +21,18 @@ struct np {
 
 #define CLK		1
 #define CNTRCLK		0
-struct cmd* cmdPtr;
-struct cmd {
+typedef struct ccmd * cmdPtr;
+typedef struct ccmd {
 	int cmd; /* Slide or Rotate */
 	int id; /* ID of piece */
 	int dir;
 	cmdPtr next;
-};
+} cmd;
 
 #define CLEAR		0
 #define TD		1
 
-struct stat {
+typedef struct stat_ {
 	int type; /* CLEAR or TD */
 	int sbm0; /* 16 bit integers lol */
 	int sbm1;
@@ -41,7 +40,7 @@ struct stat {
 	int sbm3;
 	int sbm4;
 	int sbm5;
-};
+} stat;
 
 /* Single Space States are
  * 0 0	0 0 0 	0 0 	X 0 X	0 0 |X or X| 0 0 
@@ -56,29 +55,28 @@ struct stat {
  * | = wall
  * |X = wall/full	
  */
-#define 1A 	0
-#define 1B	1
-#define 1AB	2
-#define 1C	3	
-#define 1D	4
+#define A1	0
+#define B1	1
+#define C1	3	
+#define D1	4
 
 /* Double Space States are
  * 0 0 		0 0 |X or X| 0 0 
  * 1A		2B
  * 		Preferred		
  */
-#define 2A	5
-#define 2B	6
+#define A2	5
+#define B2	6
 
 /* Triple Space States are
  * 0 0 		0 0 |X or X| 0 0 
  * 3A		3B
  * 		Preferred		
  */
-#define 3A	7
-#define 3B	8
+#define A3	7
+#define B3	8
 
-struct space_t {
+typedef struct space_j {
 	int state; 	/* State of the space */
 	int row; 	/* Row of space */
 	int col;	/* Location of space */
@@ -86,7 +84,7 @@ struct space_t {
 	int cost;	/* Cost of space */
 	cmdPtr commands;
 	int priority;	/* Priority */
-};			/* Could include a linked list of cmd */
+} space_t;			/* Could include a linked list of cmd */
 
 /* Single space rotation costs
  * Corner Piece States are (for reference):
