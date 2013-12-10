@@ -2,7 +2,6 @@
 #include "yakk.h"
 #include "lab8defs.h"
 #include "simptris.h"
-#include "macros.h"
 
 #define ASTACKSIZE 256          /* Size of each stack in words */
 #define BSTACKSIZE 256
@@ -10,9 +9,9 @@
 #define MSGQSIZE   20
 #define SEED 1247
 
-struct np NPArray[NPARRAYSIZE]; 	/* buffers for new piece content */
-struct cmd CmdArray[CMDARRAYSIZE]; 	/* buffers for command content */
-struct stat StatArray[STATARRAYSIZE];   /* buffers for stat content */
+np NPArray[NPARRAYSIZE]; 	/* buffers for new piece content */
+cmd CmdArray[CMDARRAYSIZE]; 	/* buffers for command content */
+stat StatArray[STATARRAYSIZE];   /* buffers for stat content */
 
 int AStk[ASTACKSIZE];           /* Space for each task's stack */
 int BStk[BSTACKSIZE];
@@ -33,17 +32,9 @@ void CTask(void);
 YKSEM* RCSem; /* Semaphore for received command */
 
 /* Function prototypes for utility code */
-space_t find3space(np* piece); /* Finds nearest space 3 wide */
-space_t find2space(np* piece);
-space_t find1space(np* piece);
-space_t getBestSpace(np* piece);
-void updateCost(space_t space,np* piece,cmd* commands, int first);
-space_t makeSpace(int, int, int, int, int);
-
-void updateMap(int, space_t*);
-int baseRow = 0;
-int map[6][16];
-
+int find3space(int col); /* Finds nearest space 3 wide */
+int find2space(int col);
+int find1space(int col);
 void gameOver(void); /* Lists end of game stats ?*/
 
 /* Global variables */
@@ -66,12 +57,12 @@ void main(void) {
 }
 
 void ATask(void){ /* Communicates with simptris */
-	cmdPtr command;
+	cmd* command;
 	SeedSimptris(SEED);
 	StartSimptris();
-	while(1) { 
-		YKSemPend(RCSem);  /* Simptris ready for command? */
-		command = (cmdPtr) YKQPend(CmdQPtr);/* Pends on command queue */
+	while(1) { /* Pends on command queue */
+		YKSemPend(RCSem);
+		command = (cmd *) YKQPend(CmdQPtr);
 		/* Does something with command */
 		if (command->cmd == SLIDE) {
 			SlidePiece(command->id, command->dir);
@@ -82,38 +73,33 @@ void ATask(void){ /* Communicates with simptris */
 }
 
 void BTask(void){ /* New Piece */
-	np * piece;
-	cmdPtr command;
-	cmd cmd2;
-	space_t space;
-	int i;
+	np* piece;
+	int i, slides;
 	static next;
 	while(1){
 		/* Removes pieces from piece queue */
 		piece = (np *) YKQPend(NPQPtr);
 		/* Decides what command to do */
-		space = getBestSpace(piece);
-		/* update map */
-		updateMap(piece->type, &space);
+		slides = piece->col;
+		for(i = 0; i < slides; i++){ 
+			CmdArray[next].id = piece->id;
+			CmdArray[next].cmd = SLIDE;
+			CmdArray[next].dir = LEFT;
 		/* Put commands on command queue */
-		command = space.commands;
-		cmd = *command;
-		for( i = 0; i < space.cost; i++){
-			CmdArray[next] = (cmd) (*command);
-			command = command->next;
 			if(YKQPost(CmdQPtr, (void *) &(CmdArray[next])) == 0)
 				printString("  Command queue overflow ! \n");
 			else if ( ++ next >= CMDARRAYSIZE)
 				next = 0;
 		}
+
 	}
 }
 
 void CTask(void){ /* Statistics */
-	stat * stats;
+	stat* stats;
 	while(1){
 		/* Gets stats from stats queue */
-		stats = (stat *) YKQPend(StatQPtr);
+		stats = (struct stat *) YKQPend(StatQPtr);
 		if (stats->type == CLEAR) 
 			lines++;
 		
@@ -123,214 +109,4 @@ void CTask(void){ /* Statistics */
 
 void gameOver(){
 
-}
-
-/**
- * Fills in the spaces where the peices fall
- * and updates baseRow
- *
- */
-void updateMap(int type, space_t* space){
-	int i,j, lowIndex;
-	if(type == STRAIGHT) {
-		if(space_t->rot == 0){ /* flat */
-			map[space->col - 1][space->row] 	= 1;
-			map[space->col][space->row] 		= 1;
-			map[space->col + 1][space->row] 	= 1;
-		} else {
-			map[space->col][space->row - 1] 	= 1;
-			map[space->col][space->row] 		= 1;
-			map[space->col][space->row + 1] 	= 1;
-		}
-	} else {
-		switch(space_t->rot){
-			/* X
-			 * XX
-			 */
-			case 0:
-			map[space->col][space->row+1] 		= 1;
-			map[space->col][space->row] 		= 1;
-			map[space->col+1][space->row] 		= 1;
-				       break;	
-			/*  X
-			 * XX
-			 */
-			case 1:
-			map[space->col-1][space->row] 		= 1;
-			map[space->col][space->row] 		= 1;
-			map[space->col][space->row+1] 		= 1;
-				       break;
-			/* XX
-			 *  X
-			 */
-			case 2:
-			map[space->col-1][space->row] 		= 1;
-			map[space->col][space->row] 		= 1;
-			map[space->col][space->row-1] 		= 1;
-				       break;
-			/* XX
-			 * X
-			 */
-			case 3:
-			map[space->col+1][space->row] 		= 1;
-			map[space->col][space->row] 		= 1;
-			map[space->col][space->row-1] 		= 1;
-				       break;
-		}
-	}
-	for(i = 0; i < 6; i++){
-		for(j = 15; j >= 0; j--){
-			if(map[i][j])
-				break;
-		}
-		if( lowIndex > (j+1))
-			lowIndex = j+1;
-
-	}
-	baseRow = lowIndex;
-}
-
-/**
- * takes a piece as a parameter and returns the highest priority space
- * priority is based off of type of space in relation to type of piece and cost
- * cost: rotations + distance
- *
- */
-space_t find1space(np* piece){
-	int row, col;
-	int flag; /* Flag for C space or D space */
-	space_t bestSpace, curSpace;
-	int startBest, startCur;
-	/* Array for commands, static so we can make a linked list out of them =) */
-	static cmd commands[FINDSIZE];
-	startBest = 0;
-	startCur = 8;
-	bestSpace.priority = 0;
-	bestSpace.cost = 16;
-	for(row = baseRow; row < 16; row++){
-		for(col = 0; col < 6; col++){
-			if(map[col][row] == 0 && map[col][row+1] == 0){
-				if(col-1 >= 0 && map[col-1][row] == 1){
-					if(row+1 < 16 && map[col+1][row+1] == 1){ /* C or D*/
-						if(piece->type == STRAIGHT) { // NOT L
-							/* Set flag to see if it is C or D */
-							flag = 1;
-							curSpace = makeSpace(D1, row, col, 1, 5); /* Make D piece */
-							updateCost(curSpace,piece,&commands,startCur);
-							if(spaceIsBetter(bestSpace.priority, bestSpace.cost, curSpace.priority, curSpace.cost)){
-								bestSpace = curSpace;
-								startBest = (startBest+8)%16;
-								startCur = (startCur+8)%16;
-							}
-						}
-					} else { /* A */
-						curSpace = makeSpace(A1, row, col, 2, 0); /* State, row, col, rot, priority */
-						updateCost(curSpace,piece,&commands,startCur);
-						if(spaceIsBetter(bestSpace.priority, bestSpace.cost, curSpace.priority, curSpace.cost)){
-							bestSpace = curSpace;
-							startBest = (startBest+8)%16;
-							startCur = (startCur+8)%16;
-						}
-					}
-				}
-				if(col+1 < 6 && map[col+1][row] == 1){
-					if(row+1 < 16 && map[col+1][row+1] == 1){ /* C or D */
-					       if(piece->type == STRAIGHT){	
-							if(flag) { 	/* Make C piece */
-								curSpace = makeSpace(C1, row, col, 1, 10); 
-							} else { 	/* Make D piece */
-								curSpace = makeSpace(D1, row, col, 1, 5); 
-							}
-							updateCost(curSpace,piece,&commands, startCur);
-							if(spaceIsBetter(bestSpace.priority, bestSpace.cost, curSpace.priority, curSpace.cost)){
-								bestSpace = curSpace;
-								startBest = (startBest+8)%16;
-								startCur = (startCur+8)%16;
-							}
-					       }
-					} else { /* B */
-						curSpace = makeSpace(B1, row, col, 4, 1); /* Make B piece */
-						updateCost(curSpace,piece,&commands, startCur);
-						if(spaceIsBetter(bestSpace.priority, bestSpace.cost, curSpace.priority, curSpace.cost)){
-							bestSpace = curSpace;
-							startBest = (startBest+8)%16;
-							startCur = (startCur+8)%16;
-						}
-					}
-	}
-				flag = 0;
-			}	
-		}
-	}
-}
-
-void updateCost(space_t space,np* piece,cmd* commands, int first){
-	int col,col_des,cost;
-	int next = first;
-	col = piece->col;
-	col_des = space->col;
-	cost = 0;
-	if(col == 0 || col == 5){
-		/* handle left right movement */
-		if(col < col_des){
-			cost++;
-			col--;
-			commands[next].cmd = SLIDE;
-			commands[next].dir = RIGHT;
-			commands[next].id = piece->id;
-			commands[next].next = &commands[next+1];
-			next++;
-		}
-		if(col > col_des){
-			cost++;
-			col++;
-			commands[next].cmd = SLIDE;
-			commands[next].dir = LEFT;
-			commands[next].id = piece->id;
-			commands[next].next = &commands[next+1];
-			next++;
-		}
-	}
-	/* handle rotation movement */
-/*	if(space->state == A1){
-		if(piece->type == CORNER){
-			
-		}else{
-			
-		}
-	}*/
-	/* handle left right movement */
-	while(col < col_des){
-		cost++;
-		col--;
-		commands[next].cmd = SLIDE;
-		commands[next].dir = RIGHT;
-		commands[next].id = piece->id;
-		commands[next].next = &commands[next+1];
-		next++;
-	}
-	while(col > col_des){
-		cost++;
-		col++;
-		commands[next].cmd = SLIDE;
-		commands[next].dir = LEFT;
-		commands[next].id = piece->id;
-		commands[next].next = &commands[next+1];
-		next++;
-	}
-	space->cost = cost;
-	space->commands = &commands[first];
-}
-
-/**
- * fills a space with its basic parameters
- */
-space_t makeSpace(int state, int row, int col, int rot, int priority) {
-	space_t space;
-	space.state = state;
-	space.row = row;
-	space.col = col;
-	space.rot = rot;
-	space.priority = priority;
-	return space;
 }

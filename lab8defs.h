@@ -21,8 +21,8 @@ typedef struct np_ {
 
 #define CLK		1
 #define CNTRCLK		0
-typedef struct ccmd * cmdPtr;
-typedef struct ccmd {
+typedef struct cmd_ * cmdPtr;
+typedef struct cmd_ {
 	int cmd; /* Slide or Rotate */
 	int id; /* ID of piece */
 	int dir;

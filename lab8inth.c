@@ -13,11 +13,11 @@ extern void gameOver(void);
 
 /* External variables */
 extern YKSEM* RCSem;
-extern struct np NPArray[];
+extern np NPArray[];
 extern YKQ* NPQPtr;
-extern struct cmd CmdArray[];
+extern cmd CmdArray[];
 extern YKQ* CmdQPtr;
-extern struct stat StatArray[];
+extern stat StatArray[];
 extern YKQ* StatQPtr;
 
 int nextStat = 0;
