@@ -67,11 +67,11 @@ void ATask(void){ /* Communicates with simptris */
 		YKSemPend(RCSem);
 		command = (cmd *) YKQPend(CmdQPtr);
 		/* Verify what command and piece */
-		printString("piece id: ");
-		printInt(command->id);
-		printString(" cmd: ");
-		printInt(command->cmd);
-		printNewLine();
+//		printString("piece id: ");
+//		printInt(command->id);
+//		printString(" cmd: ");
+//		printInt(command->cmd);
+//		printNewLine();
 		/* Does something with command */
 		if (command->cmd == SLIDE) {
 			SlidePiece(command->id, command->dir);
@@ -101,12 +101,9 @@ void BTask(void){ /* New Piece */
 		col = piece->col;
 		id = piece->id;
 		if(piece->type == STRAIGHT){
-			YKEnterMutex();
-			YKExitMutex();
 			if(spaces > MAXSPACES)
 				space_dir = RIGHT;
 			else{
-				spaces++;
 				space_dir = LEFT;
 			}
 			if(col == 5){ /* move the space one left then rotated */

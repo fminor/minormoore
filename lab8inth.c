@@ -50,6 +50,7 @@ void handleRC(){ /* Received Command */
 }
 extern int spaces;
 void handleTD(){ /* Touchdown */
+	int i;
 	extern int TouchdownID;
 	extern int ScreenBitMap0;
 	extern int ScreenBitMap1;
@@ -64,6 +65,11 @@ void handleTD(){ /* Touchdown */
 	StatArray[nextStat].sbm3 = ScreenBitMap3;
 	StatArray[nextStat].sbm4 = ScreenBitMap4;
 	StatArray[nextStat].sbm5 = ScreenBitMap5;
+	for(i = 0; i < 16; i++){
+		if(ScreenBitMap0 & (1<<i))
+			break;
+	}
+	spaces = 15-i+1;
 	/* Puts information on StatQ */
 	if(YKQPost(StatQPtr, (void *) &(StatArray[nextStat])) == 0)
 		printString("  TouchdownISR: queue overflow ! \n");
@@ -75,10 +81,12 @@ void handleTD(){ /* Touchdown */
 void handleLC(){ /* Line Clear */
 	/* Puts information on StatQ */
 	StatArray[nextStat].type = CLEAR;
-	if(spaces > MAXSPACES)
-		spaces--;
-	else
-		spaces-=2;
+//	if(spaces > MAXSPACES)
+//		spaces--;
+//	else
+//		spaces-=2;
+//	if(spaces < 0)
+//		spaces = 0;
 	/* Puts information on StatQ */
 	if(YKQPost(StatQPtr, (void *) &(StatArray[nextStat])) == 0)
 		printString("  LineClearISR: queue overflow ! \n");
